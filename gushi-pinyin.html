@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>古诗拼音排版 · A4 打印</title>
+  <script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.26.0/dist/index.js"></script>
+  <style>
+    :root {
+      --bg: #f6f3ec;
+      --panel: #fffdf8;
+      --ink: #1f1a14;
+      --muted: #6b6258;
+      --line: #ddd4c5;
+      --accent: #8b4513;
+      --accent-soft: #c4a484;
+      --grid: #c9c0b0;
+      --han-size: 28px;
+      --py-size: 12px;
+      --title-size: 36px;
+      --line-gap: 1.35;
+      --char-gap: 0.18em;
+      --page-margin: 18mm;
+      --page-orient: portrait;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse at top, #fff9ef 0%, transparent 55%),
+        linear-gradient(180deg, #f8f2e6 0%, var(--bg) 100%);
+      min-height: 100vh;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: minmax(300px, 380px) 1fr;
+      gap: 20px;
+      padding: 20px;
+      max-width: 1480px;
+      margin: 0 auto;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 10px 30px rgba(80, 55, 20, 0.06);
+      height: fit-content;
+      position: sticky;
+      top: 16px;
+      max-height: calc(100vh - 32px);
+      overflow: auto;
+    }
+
+    h1 {
+      margin: 0 0 4px;
+      font-size: 1.35rem;
+      letter-spacing: 0.04em;
+      color: var(--accent);
+    }
+
+    .sub {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.5;
+    }
+
+    label {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin: 10px 0 6px;
+    }
+
+    textarea, select, input[type="range"], input[type="number"] {
+      width: 100%;
+      font: inherit;
+    }
+
+    textarea {
+      min-height: 220px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: #fff;
+      line-height: 1.6;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .ctrl {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ctrl output {
+      min-width: 3.2em;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      color: var(--ink);
+      font-size: 0.85rem;
+    }
+
+    .btns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 9px 16px;
+      cursor: pointer;
+      font: inherit;
+      font-size: 0.9rem;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-secondary {
+      background: #efe7da;
+      color: var(--ink);
+    }
+
+    .hint {
+      margin-top: 12px;
+      padding: 10px 12px;
+      background: #f3ebe0;
+      border-radius: 10px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.55;
+    }
+
+    .preview-wrap {
+      min-width: 0;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar .meta {
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .pages {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      background: #fff;
+      border: 1px solid var(--line);
+      box-shadow: 0 12px 40px rgba(60, 40, 10, 0.08);
+      padding: var(--page-margin);
+      display: flex;
+      flex-direction: column;
+      page-break-after: always;
+      break-after: page;
+    }
+
+    .page.landscape {
+      width: 297mm;
+      min-height: 210mm;
+    }
+
+    .page-inner {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      gap: var(--poem-gap, 12mm);
+      min-height: 0;
+    }
+
+    .page-inner.layout-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-content: center;
+      gap: var(--poem-gap, 10mm);
+    }
+
+    .page-inner.layout-grid-2 .poem {
+      justify-content: center;
+    }
+
+    .poem {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      gap: calc(var(--han-size) * 0.55);
+      text-align: center;
+      min-height: 0;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    .poem-title {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 0.08em;
+      font-size: var(--title-size);
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      line-height: 1.3;
+      margin-bottom: 0.2em;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    .poem-title .han {
+      font-size: var(--title-size);
+      width: 1.1em;
+      height: 1.1em;
+    }
+
+    .poem-title .char {
+      min-width: calc(var(--title-size) * 1.05);
+    }
+
+    .poem-author {
+      font-size: calc(var(--han-size) * 0.72);
+      color: #444;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.6em;
+    }
+
+    .verse {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: flex-end;
+      gap: calc(var(--han-size) * var(--line-gap) * 0.08) var(--char-gap);
+      page-break-inside: avoid;
+      break-inside: avoid;
+      margin: 0.15em 0;
+      max-width: 100%;
+    }
+
+    .verse.block {
+      display: block;
+      width: 100%;
+    }
+
+    .char {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      vertical-align: bottom;
+      min-width: calc(var(--han-size) * 1.15);
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    .char.punct {
+      min-width: calc(var(--han-size) * 0.55);
+    }
+
+    .pinyin {
+      display: block;
+      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      font-size: var(--py-size);
+      line-height: 1.15;
+      color: #555;
+      white-space: nowrap;
+      letter-spacing: -0.02em;
+      max-width: 100%;
+      transform-origin: center bottom;
+      margin-bottom: 0.12em;
+      height: calc(var(--py-size) * 1.2);
+    }
+
+    .pinyin.editable {
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .pinyin.editable:hover {
+      color: var(--accent);
+      background: rgba(139, 69, 19, 0.08);
+    }
+    .pinyin.manual {
+      color: var(--accent);
+      box-shadow: inset 0 -1px 0 var(--accent);
+    }
+    .pinyin.editing {
+      outline: 1px solid var(--accent);
+      background: #fff8ef;
+      cursor: text;
+      transform: none !important;
+      min-width: 2.5em;
+      padding: 0 2px;
+    }
+
+    .py-editor {
+      position: fixed;
+      z-index: 9999;
+      background: #fffdf8;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: 0 12px 36px rgba(60,40,10,0.18);
+      padding: 12px;
+      width: 260px;
+      display: none;
+    }
+    .py-editor.show { display: block; }
+    .py-editor .hd {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .py-editor .hd b { color: var(--ink); font-size: 1.1rem; margin: 0 4px; }
+    .py-editor input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+    .py-editor .alts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+      min-height: 1.5em;
+    }
+    .py-editor .alts button {
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #efe7da;
+      font-size: 0.85rem;
+    }
+    .py-editor .alts button.active {
+      background: var(--accent);
+      color: #fff;
+    }
+    .py-editor .actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .py-editor .actions button {
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+    }
+
+    .han {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.15em;
+      height: 1.15em;
+      font-size: var(--han-size);
+      line-height: 1;
+      font-family: "Kaiti SC", "STKaiti", "KaiTi", "Songti SC", serif;
+    }
+
+    .mode-han-only .pinyin { display: none; }
+    .mode-han-only .char { min-width: calc(var(--han-size) * 1.05); }
+
+    .mode-grid .han {
+      border: 1px solid var(--grid);
+      background:
+        linear-gradient(to right, transparent 49.5%, rgba(180,170,150,0.45) 49.5%, rgba(180,170,150,0.45) 50.5%, transparent 50.5%),
+        linear-gradient(to bottom, transparent 49.5%, rgba(180,170,150,0.45) 49.5%, rgba(180,170,150,0.45) 50.5%, transparent 50.5%);
+      box-sizing: border-box;
+    }
+
+    .mode-grid .char.punct .han {
+      border: none;
+      background: none;
+      width: auto;
+      height: auto;
+    }
+
+    .mode-kids {
+      --han-size: 48px;
+      --py-size: 16px;
+      --title-size: 52px;
+      --line-gap: 1.55;
+      --char-gap: 0.28em;
+    }
+
+    .empty {
+      color: var(--muted);
+      padding: 60px 20px;
+      text-align: center;
+      background: #fff;
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+    }
+
+    @media (max-width: 980px) {
+      .app { grid-template-columns: 1fr; }
+      .panel { position: static; max-height: none; }
+      .page, .page.landscape {
+        width: 100%;
+        min-height: auto;
+        aspect-ratio: auto;
+      }
+    }
+
+    @page {
+      size: A4 portrait;
+      margin: 0;
+    }
+
+    @page landscape {
+      size: A4 landscape;
+      margin: 0;
+    }
+
+    @media print {
+      body {
+        background: #fff !important;
+      }
+      .no-print { display: none !important; }
+      .app {
+        display: block;
+        padding: 0;
+        max-width: none;
+      }
+      .preview-wrap { margin: 0; }
+      .pages { gap: 0; }
+      .page {
+        width: 210mm;
+        min-height: 297mm;
+        height: 297mm;
+        border: none;
+        box-shadow: none;
+        margin: 0;
+        page-break-after: always;
+        break-after: page;
+      }
+      .page.landscape {
+        width: 297mm;
+        min-height: 210mm;
+        height: 210mm;
+        page: landscape;
+      }
+      .page:last-child {
+        page-break-after: auto;
+        break-after: auto;
+      }
+      .verse, .char, .poem-title, .poem-author {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="panel no-print">
+      <h1>古诗拼音排版</h1>
+      <p class="sub">输入古诗，自动注音排版，支持 A4 打印。可手动调每页首数与单个注音。</p>
+
+      <label for="input">古诗输入（多首用空行分隔）</label>
+      <textarea id="input" placeholder="静夜思
+唐 · 李白
+床前明月光，
+疑是地上霜。
+举头望明月，
+低头思故乡。
+
+登鹳雀楼
+王之涣
+白日依山尽，
+黄河入海流。
+欲穷千里目，
+更上一层楼。"></textarea>
+
+      <label for="mode">排版模式</label>
+      <select id="mode">
+        <option value="pinyin">拼音 + 汉字</option>
+        <option value="han">纯汉字</option>
+        <option value="grid">拼音 + 汉字 + 田字格</option>
+        <option value="kids">超大字号（低年级）</option>
+      </select>
+
+      <div class="row">
+        <div>
+          <label for="orient">纸张方向</label>
+          <select id="orient">
+            <option value="portrait">A4 纵向</option>
+            <option value="landscape">A4 横向</option>
+          </select>
+        </div>
+        <div>
+          <label for="fit">页面适应</label>
+          <select id="fit">
+            <option value="auto">自动适应</option>
+            <option value="fixed">固定字号</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="poemsPerPage">每页几首</label>
+          <select id="poemsPerPage">
+            <option value="1" selected>1 首</option>
+            <option value="2">2 首</option>
+            <option value="3">3 首</option>
+            <option value="4">4 首</option>
+            <option value="5">5 首</option>
+            <option value="6">6 首</option>
+          </select>
+        </div>
+        <div>
+          <label for="multiLayout">多诗布局</label>
+          <select id="multiLayout">
+            <option value="stack">纵向排列</option>
+            <option value="grid2">双栏</option>
+          </select>
+        </div>
+      </div>
+
+      <label>诗间距 <span class="ctrl"><input id="poemGap" type="range" min="4" max="30" value="12" /><output id="poemGapOut">12mm</output></span></label>
+
+      <label>汉字大小 <span class="ctrl"><input id="hanSize" type="range" min="16" max="72" value="28" /><output id="hanSizeOut">28px</output></span></label>
+      <label>拼音大小 <span class="ctrl"><input id="pySize" type="range" min="8" max="28" value="12" /><output id="pySizeOut">12px</output></span></label>
+      <label>标题大小 <span class="ctrl"><input id="titleSize" type="range" min="20" max="80" value="36" /><output id="titleSizeOut">36px</output></span></label>
+      <label>行距 <span class="ctrl"><input id="lineGap" type="range" min="100" max="220" value="135" /><output id="lineGapOut">1.35</output></span></label>
+      <label>字间距 <span class="ctrl"><input id="charGap" type="range" min="0" max="60" value="18" /><output id="charGapOut">0.18em</output></span></label>
+      <label>页边距 <span class="ctrl"><input id="margin" type="range" min="8" max="35" value="18" /><output id="marginOut">18mm</output></span></label>
+
+      <div class="btns">
+        <button class="btn-primary" id="btnRender" type="button">生成排版</button>
+        <button class="btn-secondary" id="btnPrint" type="button">打印 / 导出 PDF</button>
+        <button class="btn-secondary" id="btnSample" type="button">填入示例</button>
+        <button class="btn-secondary" id="btnClearPy" type="button">清除注音修改</button>
+      </div>
+
+      <div class="hint">
+        格式：第一行诗名，第二行作者/朝代（可空），其后为正文。多首诗之间空一行。<br />
+        单击拼音：多音轮换；双击拼音：手动输入。修改会保留到下次重新生成。<br />
+        「每页几首」可控制分页；多首时可选纵向或双栏布局。
+      </div>
+    </aside>
+
+    <main class="preview-wrap">
+      <div class="toolbar no-print">
+        <div class="meta" id="meta">尚未生成</div>
+        <div class="btns" style="margin:0">
+          <button class="btn-secondary" id="btnPrint2" type="button">打印</button>
+        </div>
+      </div>
+      <div class="pages" id="pages">
+        <div class="empty">在左侧输入古诗后点击「生成排版」</div>
+      </div>
+    </main>
+  </div>
+
+  <div class="py-editor no-print" id="pyEditor" role="dialog" aria-label="修改注音">
+    <div class="hd">修改「<b id="pyEditChar"></b>」的注音</div>
+    <input id="pyEditInput" type="text" autocomplete="off" spellcheck="false" placeholder="如 gēng / geng1" />
+    <div class="alts" id="pyEditAlts"></div>
+    <div class="actions">
+      <button type="button" class="btn-secondary" id="pyEditCancel">取消</button>
+      <button type="button" class="btn-primary" id="pyEditOk">确定</button>
+    </div>
+  </div>
+
+  <script>
+    const { pinyin } = window.pinyinPro || {};
+    if (typeof pinyin !== "function") {
+      console.warn("pinyin-pro 未加载，将仅显示汉字");
+    }
+
+    /**
+     * 单字默认：只放古诗中几乎固定的读音。
+     * 「更/行/长/还」等高歧义字不要写死，交给短语、语境规则和整句分词。
+     */
+    const POETRY_POLYPHONE = {
+      "塞": "sài", "泊": "bó", "骑": "qí", "曲": "qū", "咽": "yè",
+      "绦": "tāo", "绿": "lǜ", "似": "sì", "莫": "mò", "几": "jǐ",
+    };
+
+    /** 短语优先：越长越优先 */
+    const PHRASE_MAP = [
+      ["一行白鹭上青天", ["yì", "háng", "bái", "lù", "shàng", "qīng", "tiān"]],
+      ["一行白鹭", ["yì", "háng", "bái", "lù"]],
+      ["一行作吏", ["yí", "xíng", "zuò", "lì"]],
+      ["三更灯火五更鸡", ["sān", "gēng", "dēng", "huǒ", "wǔ", "gēng", "jī"]],
+      ["将进酒", ["qiāng", "jìn", "jiǔ"]],
+      ["绿丝绦", ["lǜ", "sī", "tāo"]],
+      ["似剪刀", ["sì", "jiǎn", "dāo"]],
+      ["思故乡", ["sī", "gù", "xiāng"]],
+      ["地上霜", ["dì", "shàng", "shuāng"]],
+      ["明月光", ["míng", "yuè", "guāng"]],
+      ["玉门关", ["yù", "mén", "guān"]],
+      ["夜光杯", ["yè", "guāng", "bēi"]],
+      ["君莫笑", ["jūn", "mò", "xiào"]],
+      ["几人回", ["jǐ", "rén", "huí"]],
+      ["依山尽", ["yī", "shān", "jìn"]],
+      ["入海流", ["rù", "hǎi", "liú"]],
+      ["长相思", ["cháng", "xiāng", "sī"]],
+      ["长河", ["cháng", "hé"]],
+      ["长城", ["cháng", "chéng"]],
+      ["长江", ["cháng", "jiāng"]],
+      ["长亭", ["cháng", "tíng"]],
+      ["还乡", ["huán", "xiāng"]],
+      ["还来", ["huán", "lái"]],
+      ["朝辞", ["zhāo", "cí"]],
+      ["朝晖", ["zhāo", "huī"]],
+      ["朝露", ["zhāo", "lù"]],
+      ["朝朝", ["zhāo", "zhāo"]],
+      ["暮朝", ["mù", "zhāo"]],
+      ["重阳", ["chóng", "yáng"]],
+      ["重叠", ["chóng", "dié"]],
+      ["少年", ["shào", "nián"]],
+      ["多少", ["duō", "shǎo"]],
+      ["少小", ["shào", "xiǎo"]],
+      ["睡觉", ["shuì", "jiào"]],
+      ["觉来", ["jué", "lái"]],
+      ["不觉", ["bù", "jué"]],
+      ["将军", ["jiāng", "jūn"]],
+      ["将来", ["jiāng", "lái"]],
+      ["应是", ["yīng", "shì"]],
+      ["应怜", ["yīng", "lián"]],
+      ["为君", ["wèi", "jūn"]],
+      ["为何", ["wèi", "hé"]],
+      ["因为", ["yīn", "wéi"]],
+      ["以为", ["yǐ", "wéi"]],
+      ["没有", ["méi", "yǒu"]],
+      ["没入", ["mò", "rù"]],
+      ["泊船", ["bó", "chuán"]],
+      ["漂泊", ["piāo", "bó"]],
+      ["骑鹤", ["qí", "hè"]],
+      ["属国", ["shǔ", "guó"]],
+      ["更上", ["gèng", "shàng"]],
+      ["更加", ["gèng", "jiā"]],
+      ["更衣", ["gēng", "yī"]],
+      ["一更", ["yī", "gēng"]],
+      ["二更", ["èr", "gēng"]],
+      ["三更", ["sān", "gēng"]],
+      ["四更", ["sì", "gēng"]],
+      ["五更", ["wǔ", "gēng"]],
+      ["打更", ["dǎ", "gēng"]],
+      ["更鼓", ["gēng", "gǔ"]],
+      ["夜更", ["yè", "gēng"]],
+      ["着花", ["zhuó", "huā"]],
+      ["看着", ["kàn", "zhe"]],
+      ["种豆", ["zhòng", "dòu"]],
+      ["处处", ["chù", "chù"]],
+      ["人间", ["rén", "jiān"]],
+      ["便引", ["biàn", "yǐn"]],
+      ["得意", ["dé", "yì"]],
+      ["边塞", ["biān", "sài"]],
+      ["塞上", ["sài", "shàng"]],
+      ["盛开", ["shèng", "kāi"]],
+      ["曲项", ["qū", "xiàng"]],
+      ["乐曲", ["yuè", "qǔ"]],
+      ["和风", ["hé", "fēng"]],
+      ["唱和", ["chàng", "hè"]],
+      ["呜咽", ["wū", "yè"]],
+      ["恶少", ["è", "shào"]],
+      ["藏春", ["cáng", "chūn"]],
+      ["难为", ["nán", "wéi"]],
+      ["都护", ["dū", "hù"]],
+      ["成都", ["chéng", "dū"]],
+      ["白日", ["bái", "rì"]],
+      ["黄河", ["huáng", "hé"]],
+      ["千里", ["qiān", "lǐ"]],
+      ["明月", ["míng", "yuè"]],
+      ["故乡", ["gù", "xiāng"]],
+      ["春风", ["chūn", "fēng"]],
+      ["不度", ["bú", "dù"]],
+      ["羌笛", ["qiāng", "dí"]],
+      ["何须", ["hé", "xū"]],
+      ["杨柳", ["yáng", "liǔ"]],
+      ["裁出", ["cái", "chū"]],
+      ["二月", ["èr", "yuè"]],
+      ["不知", ["bù", "zhī"]],
+      ["细叶", ["xì", "yè"]],
+      ["谁裁", ["shuí", "cái"]],
+      ["万条", ["wàn", "tiáo"]],
+      ["高处", ["gāo", "chù"]],
+      ["不胜", ["bú", "shèng"]],
+      ["欲穷", ["yù", "qióng"]],
+      ["葡萄", ["pú", "táo"]],
+      ["琵琶", ["pí", "pá"]],
+      ["美酒", ["měi", "jiǔ"]],
+      ["欲饮", ["yù", "yǐn"]],
+      ["马上", ["mǎ", "shàng"]],
+      ["醉卧", ["zuì", "wò"]],
+      ["沙场", ["shā", "chǎng"]],
+      ["古来", ["gǔ", "lái"]],
+      ["征战", ["zhēng", "zhàn"]],
+    ];
+
+    /** 语境规则：只覆盖关键多音位置 */
+    const CONTEXT_RULES = [
+      { re: /([一二三四五六七八九十百千万两])更/g, pyAt: { 1: "gēng" } },
+      { re: /更([上加])/g, pyAt: { 0: "gèng" } },
+      { re: /([数几多])行/g, pyAt: { 1: "háng" } },
+      { re: /银行/g, pyAt: { 0: "yín", 1: "háng" } },
+    ];
+
+    /** 点击拼音可轮换的常见多音 */
+    const POLY_ALTS = {
+      "更": ["gēng", "gèng"],
+      "行": ["xíng", "háng", "hàng", "héng"],
+      "长": ["cháng", "zhǎng"],
+      "还": ["huán", "hái", "xuán"],
+      "朝": ["zhāo", "cháo"],
+      "乐": ["lè", "yuè"],
+      "为": ["wéi", "wèi"],
+      "着": ["zhe", "zhuó", "zháo", "āo"],
+      "少": ["shǎo", "shào"],
+      "重": ["zhòng", "chóng"],
+      "觉": ["jué", "jiào"],
+      "将": ["jiāng", "jiàng", "qiāng"],
+      "应": ["yīng", "yìng"],
+      "教": ["jiào", "jiāo"],
+      "看": ["kàn", "kān"],
+      "没": ["méi", "mò"],
+      "与": ["yǔ", "yù", "yú"],
+      "处": ["chù", "chǔ"],
+      "间": ["jiān", "jiàn"],
+      "得": ["dé", "de", "děi"],
+      "都": ["dōu", "dū"],
+      "和": ["hé", "hè", "huó", "huò"],
+      "曲": ["qū", "qǔ"],
+      "塞": ["sài", "sāi", "sè"],
+      "兴": ["xīng", "xìng"],
+      "降": ["jiàng", "xiáng"],
+      "强": ["qiáng", "qiǎng", "jiàng"],
+      "省": ["shěng", "xǐng"],
+      "差": ["chā", "chà", "chāi", "cī"],
+      "属": ["shǔ", "zhǔ"],
+      "种": ["zhǒng", "zhòng"],
+      "便": ["biàn", "pián"],
+      "盛": ["shèng", "chéng"],
+      "弹": ["tán", "dàn"],
+      "传": ["chuán", "zhuàn"],
+      "冠": ["guān", "guàn"],
+      "华": ["huá", "huà", "huā"],
+      "号": ["hào", "háo"],
+      "合": ["hé", "gě"],
+      "曾": ["céng", "zēng"],
+      "干": ["gān", "gàn"],
+      "恶": ["è", "wù", "ě"],
+      "薄": ["bó", "báo", "bò"],
+      "藏": ["cáng", "zàng"],
+      "解": ["jiě", "jiè", "xiè"],
+      "读": ["dú", "dòu"],
+      "谁": ["shuí", "shéi"],
+      "过": ["guò", "guo", "guō"],
+      "那": ["nà", "nǎ", "nèi", "nā"],
+      "量": ["liàng", "liáng"],
+      "难": ["nán", "nàn"],
+      "度": ["dù", "duó"],
+      "胜": ["shèng", "shēng"],
+      "一": ["yī", "yì", "yí"],
+      "不": ["bù", "bú"],
+    };
+
+    const PUNCT_CHARS = new Set([
+      "，", "。", "！", "？", "；", "：", "、", "．", ".", "!", "?", ";", ":",
+      "\"", "“", "”", "'", "‘", "’",
+      "（", "）", "(", ")", "【", "】", "[", "]", "《", "》", "〈", "〉",
+      "—", "…", "·", " ", "\t", "\n", "\r",
+    ]);
+    const isPunct = (ch) => PUNCT_CHARS.has(ch) || /\s/u.test(ch);
+    const HAN_RE = /[\u4e00-\u9fff]/;
+
+    const SAMPLE = `静夜思
+唐 · 李白
+床前明月光，
+疑是地上霜。
+举头望明月，
+低头思故乡。
+
+登鹳雀楼
+王之涣
+白日依山尽，
+黄河入海流。
+欲穷千里目，
+更上一层楼。
+
+咏柳
+贺知章
+碧玉妆成一树高，
+万条垂下绿丝绦。
+不知细叶谁裁出，
+二月春风似剪刀。
+
+凉州词
+王翰
+葡萄美酒夜光杯，
+欲饮琵琶马上催。
+醉卧沙场君莫笑，
+古来征战几人回。
+
+劝学
+颜真卿
+三更灯火五更鸡，
+正是男儿读书时。
+黑发不知勤学早，
+白首方悔读书迟。`;
+
+    /** 手动注音覆盖：key = poemIdx|section|lineIdx|charIdx */
+    const pyOverrides = new Map();
+
+    const els = {
+      input: document.getElementById("input"),
+      mode: document.getElementById("mode"),
+      orient: document.getElementById("orient"),
+      fit: document.getElementById("fit"),
+      poemsPerPage: document.getElementById("poemsPerPage"),
+      multiLayout: document.getElementById("multiLayout"),
+      poemGap: document.getElementById("poemGap"),
+      poemGapOut: document.getElementById("poemGapOut"),
+      hanSize: document.getElementById("hanSize"),
+      pySize: document.getElementById("pySize"),
+      titleSize: document.getElementById("titleSize"),
+      lineGap: document.getElementById("lineGap"),
+      charGap: document.getElementById("charGap"),
+      margin: document.getElementById("margin"),
+      hanSizeOut: document.getElementById("hanSizeOut"),
+      pySizeOut: document.getElementById("pySizeOut"),
+      titleSizeOut: document.getElementById("titleSizeOut"),
+      lineGapOut: document.getElementById("lineGapOut"),
+      charGapOut: document.getElementById("charGapOut"),
+      marginOut: document.getElementById("marginOut"),
+      pages: document.getElementById("pages"),
+      meta: document.getElementById("meta"),
+      btnRender: document.getElementById("btnRender"),
+      btnPrint: document.getElementById("btnPrint"),
+      btnPrint2: document.getElementById("btnPrint2"),
+      btnSample: document.getElementById("btnSample"),
+      btnClearPy: document.getElementById("btnClearPy"),
+      pyEditor: document.getElementById("pyEditor"),
+      pyEditChar: document.getElementById("pyEditChar"),
+      pyEditInput: document.getElementById("pyEditInput"),
+      pyEditAlts: document.getElementById("pyEditAlts"),
+      pyEditOk: document.getElementById("pyEditOk"),
+      pyEditCancel: document.getElementById("pyEditCancel"),
+    };
+
+    let pyEditTarget = null;
+
+    function bindRange(input, output, fmt) {
+      const sync = () => { output.textContent = fmt(input.value); };
+      input.addEventListener("input", () => { sync(); applyStyles(); maybeAutoFit(); });
+      sync();
+    }
+
+    bindRange(els.hanSize, els.hanSizeOut, v => v + "px");
+    bindRange(els.pySize, els.pySizeOut, v => v + "px");
+    bindRange(els.titleSize, els.titleSizeOut, v => v + "px");
+    bindRange(els.lineGap, els.lineGapOut, v => (v / 100).toFixed(2));
+    bindRange(els.charGap, els.charGapOut, v => (v / 100).toFixed(2) + "em");
+    bindRange(els.margin, els.marginOut, v => v + "mm");
+    bindRange(els.poemGap, els.poemGapOut, v => v + "mm");
+
+    function applyStyles() {
+      const root = document.documentElement;
+      const kids = els.mode.value === "kids";
+      root.style.setProperty("--han-size", (kids ? Math.max(+els.hanSize.value, 44) : +els.hanSize.value) + "px");
+      root.style.setProperty("--py-size", (kids ? Math.max(+els.pySize.value, 15) : +els.pySize.value) + "px");
+      root.style.setProperty("--title-size", (kids ? Math.max(+els.titleSize.value, 48) : +els.titleSize.value) + "px");
+      root.style.setProperty("--line-gap", (+els.lineGap.value / 100).toFixed(2));
+      root.style.setProperty("--char-gap", (+els.charGap.value / 100).toFixed(2) + "em");
+      root.style.setProperty("--page-margin", els.margin.value + "mm");
+      root.style.setProperty("--poem-gap", els.poemGap.value + "mm");
+    }
+
+    function pyKey(poemIdx, section, lineIdx, charIdx) {
+      return poemIdx + "|" + section + "|" + lineIdx + "|" + charIdx;
+    }
+
+    /** 数字声调转带调符号：geng1 → gēng */
+    function normalizePinyinInput(raw) {
+      let s = String(raw || "").trim().toLowerCase().replace(/\s+/g, "");
+      if (!s) return "";
+      const toneMap = {
+        a: ["ā","á","ǎ","à","a"],
+        o: ["ō","ó","ǒ","ò","o"],
+        e: ["ē","é","ě","è","e"],
+        i: ["ī","í","ǐ","ì","i"],
+        u: ["ū","ú","ǔ","ù","u"],
+        ü: ["ǖ","ǘ","ǚ","ǜ","ü"],
+        v: ["ǖ","ǘ","ǚ","ǜ","ü"],
+      };
+      const m = s.match(/^([a-züv]+)([1-5])$/i);
+      if (!m) return String(raw || "").trim();
+      let body = m[1].replace(/v/g, "ü");
+      const tone = Number(m[2]);
+      const idx = tone === 5 ? 4 : tone - 1;
+      const order = ["a","o","e","i","u","ü"];
+      // iu/ui 规则：声调标在后一个元音
+      if (body.includes("iu")) {
+        body = body.replace("u", toneMap.u[idx]);
+        return body;
+      }
+      if (body.includes("ui")) {
+        body = body.replace("i", toneMap.i[idx]);
+        return body;
+      }
+      for (const v of order) {
+        if (body.includes(v)) {
+          body = body.replace(v, toneMap[v][idx]);
+          break;
+        }
+      }
+      return body;
+    }
+
+    function parsePoems(text) {
+      const blocks = text.replace(/\r\n/g, "\n").trim().split(/\n\s*\n+/).filter(Boolean);
+      return blocks.map(block => {
+        const lines = block.split("\n").map(l => l.trim()).filter((l, i, arr) => l || i === 0);
+        const clean = lines.filter(l => l.length);
+        if (!clean.length) return null;
+        const title = clean[0];
+        let author = "";
+        let bodyStart = 1;
+        if (clean.length >= 2) {
+          const second = clean[1];
+          const looksAuthor =
+            /[·•]|唐|宋|元|明|清|汉|魏|晋|南北朝|五代|近代|当代|佚名/.test(second) ||
+            (second.length <= 12 && !/[，。！？；：]/.test(second) && clean.length >= 3);
+          if (looksAuthor) {
+            author = second;
+            bodyStart = 2;
+          }
+        }
+        const verses = clean.slice(bodyStart);
+        return { title, author, verses };
+      }).filter(Boolean);
+    }
+
+    function applyPhraseMap(line, chars, pys, locked) {
+      const sorted = [...PHRASE_MAP].sort((a, b) => b[0].length - a[0].length);
+      for (const [phrase, readings] of sorted) {
+        let from = 0;
+        while (from < chars.length) {
+          const idx = line.indexOf(phrase, from);
+          if (idx < 0) break;
+          let ok = true;
+          for (let i = 0; i < phrase.length; i++) {
+            if (locked[idx + i]) { ok = false; break; }
+          }
+          if (ok) {
+            for (let i = 0; i < phrase.length; i++) {
+              pys[idx + i] = readings[i] || "";
+              locked[idx + i] = true;
+            }
+          }
+          from = idx + 1;
+        }
+      }
+    }
+
+    function applyContextRules(line, chars, pys, locked) {
+      for (const rule of CONTEXT_RULES) {
+        const re = new RegExp(rule.re.source, rule.re.flags.includes("g") ? rule.re.flags : rule.re.flags + "g");
+        let m;
+        while ((m = re.exec(line)) !== null) {
+          const start = m.index;
+          for (const [offsetStr, reading] of Object.entries(rule.pyAt)) {
+            const offset = Number(offsetStr);
+            const i = start + offset;
+            if (i < 0 || i >= chars.length || locked[i]) continue;
+            pys[i] = reading;
+            locked[i] = true;
+          }
+        }
+      }
+    }
+
+    function linePinyinBySegment(line, chars) {
+      const out = new Array(chars.length).fill("");
+      if (typeof pinyin !== "function") return out;
+      try {
+        // 整句分词，比单字更能区分「三更」与「更上」
+        const arr = pinyin(line, {
+          toneType: "symbol",
+          type: "array",
+          nonZh: "consecutive",
+        });
+        let ai = 0;
+        for (let i = 0; i < chars.length; i++) {
+          const ch = chars[i];
+          if (isPunct(ch) || !HAN_RE.test(ch)) {
+            out[i] = "";
+            continue;
+          }
+          while (ai < arr.length && (!arr[ai] || /[^a-zāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜüńňǹ]/i.test(String(arr[ai])))) {
+            // 跳过标点片段
+            if (String(arr[ai]).includes(ch)) break;
+            ai++;
+          }
+          if (ai < arr.length) {
+            const token = String(arr[ai]);
+            // nonZh consecutive 可能把标点粘在一起；汉字应对单音节
+            if (/^[a-zāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜüńňǹ]+$/i.test(token)) {
+              out[i] = token;
+              ai++;
+            } else {
+              out[i] = pinyin(ch, { toneType: "symbol", type: "array" })[0] || "";
+              ai++;
+            }
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+      return out;
+    }
+
+    function annotateLine(line) {
+      const chars = Array.from(line);
+      const pys = new Array(chars.length).fill("");
+      const locked = new Array(chars.length).fill(false);
+
+      // 1) 人工短语（最高优先）
+      applyPhraseMap(line, chars, pys, locked);
+      // 2) 语境规则（如 数字+更 → gēng）
+      applyContextRules(line, chars, pys, locked);
+      // 3) 整句分词注音
+      const seg = linePinyinBySegment(line, chars);
+      for (let i = 0; i < chars.length; i++) {
+        if (locked[i]) continue;
+        const ch = chars[i];
+        if (isPunct(ch) || !HAN_RE.test(ch)) {
+          pys[i] = "";
+          locked[i] = true;
+          continue;
+        }
+        if (seg[i]) {
+          pys[i] = seg[i];
+          locked[i] = true;
+        }
+      }
+      // 4) 少量固定单字 / 单字回退
+      for (let i = 0; i < chars.length; i++) {
+        if (locked[i]) continue;
+        const ch = chars[i];
+        if (isPunct(ch) || !HAN_RE.test(ch)) {
+          pys[i] = "";
+          continue;
+        }
+        if (POETRY_POLYPHONE[ch]) {
+          pys[i] = POETRY_POLYPHONE[ch];
+        } else if (typeof pinyin === "function") {
+          try {
+            pys[i] = pinyin(ch, { toneType: "symbol", type: "array" })[0] || "";
+          } catch (e) {
+            pys[i] = "";
+          }
+        }
+      }
+      return chars.map((ch, i) => ({ ch, py: pys[i] || "" }));
+    }
+
+    function cyclePinyin(ch, current) {
+      const alts = POLY_ALTS[ch];
+      if (!alts || !alts.length) return current;
+      const idx = alts.indexOf(current);
+      return alts[(idx + 1) % alts.length];
+    }
+
+    function closePyEditor() {
+      els.pyEditor.classList.remove("show");
+      pyEditTarget = null;
+    }
+
+    function openPyEditor(pyEl, anchorEl) {
+      pyEditTarget = pyEl;
+      const ch = pyEl.dataset.ch || "";
+      els.pyEditChar.textContent = ch;
+      els.pyEditInput.value = pyEl.textContent || "";
+      els.pyEditAlts.innerHTML = "";
+      const alts = POLY_ALTS[ch] || [];
+      alts.forEach(a => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.textContent = a;
+        if (a === pyEl.textContent) b.classList.add("active");
+        b.addEventListener("click", () => {
+          els.pyEditInput.value = a;
+          els.pyEditAlts.querySelectorAll("button").forEach(x => x.classList.remove("active"));
+          b.classList.add("active");
+          els.pyEditInput.focus();
+        });
+        els.pyEditAlts.appendChild(b);
+      });
+
+      const rect = anchorEl.getBoundingClientRect();
+      const ed = els.pyEditor;
+      ed.classList.add("show");
+      const left = Math.min(window.innerWidth - 280, Math.max(8, rect.left + rect.width / 2 - 130));
+      const top = Math.min(window.innerHeight - 220, rect.bottom + 8);
+      ed.style.left = left + "px";
+      ed.style.top = top + "px";
+      els.pyEditInput.focus();
+      els.pyEditInput.select();
+    }
+
+    function commitPyEditor() {
+      if (!pyEditTarget) return;
+      const raw = els.pyEditInput.value;
+      const val = normalizePinyinInput(raw);
+      const key = pyEditTarget.dataset.key;
+      const ch = pyEditTarget.dataset.ch;
+      pyEditTarget.textContent = val;
+      if (key) {
+        if (val) pyOverrides.set(key, val);
+        else pyOverrides.delete(key);
+      }
+      pyEditTarget.classList.toggle("manual", !!(key && pyOverrides.has(key)));
+      const page = pyEditTarget.closest(".page");
+      if (page) fitPinyin(page);
+      closePyEditor();
+      // 同步同字常见多音到 POLY 记忆：仅写入当前 key
+      void ch;
+    }
+
+    function createCharEl(item, showPinyin, key) {
+      const wrap = document.createElement("span");
+      wrap.className = "char" + (isPunct(item.ch) || !HAN_RE.test(item.ch) ? " punct" : "");
+      wrap.dataset.ch = item.ch;
+
+      if (showPinyin) {
+        const py = document.createElement("span");
+        py.className = "pinyin editable";
+        const overridden = key && pyOverrides.has(key);
+        const finalPy = overridden ? pyOverrides.get(key) : (item.py || "");
+        py.textContent = finalPy;
+        py.dataset.ch = item.ch;
+        if (key) py.dataset.key = key;
+        if (overridden) py.classList.add("manual");
+
+        const tips = [];
+        if (POLY_ALTS[item.ch]) tips.push("单击轮换：" + POLY_ALTS[item.ch].join("/"));
+        tips.push("双击手动修改");
+        py.title = tips.join("；");
+
+        let clickTimer = null;
+        py.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (clickTimer) clearTimeout(clickTimer);
+          clickTimer = setTimeout(() => {
+            clickTimer = null;
+            if (!POLY_ALTS[item.ch]) {
+              openPyEditor(py, wrap);
+              return;
+            }
+            const next = cyclePinyin(item.ch, py.textContent);
+            py.textContent = next;
+            if (key) {
+              pyOverrides.set(key, next);
+              py.classList.add("manual");
+            }
+            const page = wrap.closest(".page");
+            if (page) fitPinyin(page);
+          }, 220);
+        });
+
+        py.addEventListener("dblclick", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (clickTimer) {
+            clearTimeout(clickTimer);
+            clickTimer = null;
+          }
+          openPyEditor(py, wrap);
+        });
+
+        wrap.appendChild(py);
+      }
+
+      const han = document.createElement("span");
+      han.className = "han";
+      han.textContent = item.ch;
+      wrap.appendChild(han);
+      return wrap;
+    }
+
+    function fitPinyin(page) {
+      page.querySelectorAll(".char").forEach(charEl => {
+        const pyEl = charEl.querySelector(".pinyin");
+        const hanEl = charEl.querySelector(".han");
+        if (!pyEl || !pyEl.textContent) return;
+        pyEl.style.transform = "scale(1)";
+        const maxW = Math.max(hanEl.offsetWidth, charEl.offsetWidth * 0.95, 1);
+        const w = pyEl.scrollWidth;
+        if (w > maxW) {
+          const scale = Math.max(0.55, maxW / w);
+          pyEl.style.transform = `scale(${scale})`;
+        }
+      });
+    }
+
+    function modeClass(mode) {
+      if (mode === "han") return "mode-han-only";
+      if (mode === "grid") return "mode-grid";
+      if (mode === "kids") return "mode-kids mode-grid";
+      return "";
+    }
+
+    function buildPoemEl(poem, poemIdx, mode, showPinyin) {
+      const poemEl = document.createElement("article");
+      poemEl.className = "poem " + modeClass(mode);
+      poemEl.dataset.poemIndex = String(poemIdx);
+
+      const title = document.createElement("div");
+      title.className = "poem-title";
+      if (showPinyin) {
+        annotateLine(poem.title).forEach((item, ci) => {
+          title.appendChild(createCharEl(item, true, pyKey(poemIdx, "title", 0, ci)));
+        });
+      } else {
+        title.textContent = poem.title;
+      }
+      poemEl.appendChild(title);
+
+      if (poem.author) {
+        const author = document.createElement("div");
+        author.className = "poem-author";
+        author.textContent = poem.author;
+        poemEl.appendChild(author);
+      }
+
+      poem.verses.forEach((line, li) => {
+        const verse = document.createElement("div");
+        verse.className = "verse";
+        annotateLine(line).forEach((item, ci) => {
+          verse.appendChild(createCharEl(item, showPinyin, pyKey(poemIdx, "verse", li, ci)));
+        });
+        poemEl.appendChild(verse);
+      });
+      return poemEl;
+    }
+
+    function render() {
+      closePyEditor();
+      applyStyles();
+      const poems = parsePoems(els.input.value);
+      const orient = els.orient.value;
+      const mode = els.mode.value;
+      const showPinyin = mode !== "han";
+      const perPage = Math.max(1, Math.min(6, Number(els.poemsPerPage.value) || 1));
+      const layout = els.multiLayout.value;
+
+      els.pages.innerHTML = "";
+      if (!poems.length) {
+        els.pages.innerHTML = '<div class="empty">请输入至少一首古诗</div>';
+        els.meta.textContent = "尚未生成";
+        return;
+      }
+
+      const pageCount = Math.ceil(poems.length / perPage);
+      for (let p = 0; p < pageCount; p++) {
+        const page = document.createElement("section");
+        page.className = "page" + (orient === "landscape" ? " landscape" : "");
+        page.dataset.index = String(p);
+
+        const inner = document.createElement("div");
+        inner.className = "page-inner";
+        if (perPage > 1 && layout === "grid2") inner.classList.add("layout-grid-2");
+
+        const chunk = poems.slice(p * perPage, p * perPage + perPage);
+        chunk.forEach((poem, j) => {
+          const poemIdx = p * perPage + j;
+          inner.appendChild(buildPoemEl(poem, poemIdx, mode, showPinyin));
+        });
+
+        page.appendChild(inner);
+        els.pages.appendChild(page);
+      }
+
+      const ov = pyOverrides.size ? ` · 已改注音 ${pyOverrides.size} 处` : "";
+      els.meta.textContent = `共 ${poems.length} 首 · ${pageCount} 页 · 每页 ${perPage} 首 · ${orient === "landscape" ? "横向" : "纵向"} · ${els.mode.options[els.mode.selectedIndex].text}${ov}`;
+
+      requestAnimationFrame(() => {
+        els.pages.querySelectorAll(".page").forEach(fitPinyin);
+        if (els.fit.value === "auto") autoFitPages();
+      });
+    }
+
+    function autoFitPages() {
+      els.pages.querySelectorAll(".page").forEach(page => {
+        const inner = page.querySelector(".page-inner") || page;
+        applyStyles();
+        page.style.setProperty("--han-size", getComputedStyle(document.documentElement).getPropertyValue("--han-size"));
+        page.style.setProperty("--py-size", getComputedStyle(document.documentElement).getPropertyValue("--py-size"));
+        page.style.setProperty("--title-size", getComputedStyle(document.documentElement).getPropertyValue("--title-size"));
+
+        let guard = 0;
+        while (guard++ < 28) {
+          const overflow = inner.scrollHeight > page.clientHeight - 4 || inner.scrollWidth > page.clientWidth - 4;
+          if (!overflow) break;
+          const cs = getComputedStyle(page);
+          const han = parseFloat(cs.getPropertyValue("--han-size")) || 28;
+          const py = parseFloat(cs.getPropertyValue("--py-size")) || 12;
+          const title = parseFloat(cs.getPropertyValue("--title-size")) || 36;
+          if (han <= 14) break;
+          page.style.setProperty("--han-size", Math.max(14, han * 0.93) + "px");
+          page.style.setProperty("--py-size", Math.max(7, py * 0.93) + "px");
+          page.style.setProperty("--title-size", Math.max(16, title * 0.93) + "px");
+          fitPinyin(page);
+        }
+        fitPinyin(page);
+      });
+    }
+
+    function maybeAutoFit() {
+      if (!els.pages.querySelector(".poem")) return;
+      if (els.fit.value === "auto") {
+        requestAnimationFrame(autoFitPages);
+      } else {
+        applyStyles();
+        els.pages.querySelectorAll(".page").forEach(fitPinyin);
+      }
+    }
+
+    els.btnRender.addEventListener("click", render);
+    els.btnSample.addEventListener("click", () => {
+      els.input.value = SAMPLE;
+      render();
+    });
+    els.btnClearPy.addEventListener("click", () => {
+      pyOverrides.clear();
+      closePyEditor();
+      render();
+    });
+    els.btnPrint.addEventListener("click", () => { closePyEditor(); window.print(); });
+    els.btnPrint2.addEventListener("click", () => { closePyEditor(); window.print(); });
+    els.mode.addEventListener("change", render);
+    els.orient.addEventListener("change", render);
+    els.poemsPerPage.addEventListener("change", render);
+    els.multiLayout.addEventListener("change", render);
+    els.fit.addEventListener("change", () => {
+      applyStyles();
+      maybeAutoFit();
+    });
+
+    els.pyEditOk.addEventListener("click", commitPyEditor);
+    els.pyEditCancel.addEventListener("click", closePyEditor);
+    els.pyEditInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); commitPyEditor(); }
+      if (e.key === "Escape") { e.preventDefault(); closePyEditor(); }
+    });
+    document.addEventListener("click", (e) => {
+      if (!els.pyEditor.classList.contains("show")) return;
+      if (els.pyEditor.contains(e.target)) return;
+      if (e.target && e.target.classList && e.target.classList.contains("pinyin")) return;
+      closePyEditor();
+    });
+
+    // 初始示例
+    els.input.value = SAMPLE;
+    render();
+  </script>
+</body>
+</html>
