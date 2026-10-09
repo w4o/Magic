@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>小学生计算题</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f3ec;
+      --panel: #fffdf8;
+      --ink: #1f1a14;
+      --muted: #6b6258;
+      --line: #ddd4c5;
+      --accent: #8b4513;
+      --ok: #0c7a43;
+      --q-size: 18px;
+      --cols: 4;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse at top, #fff9ef 0%, transparent 55%),
+        linear-gradient(180deg, #f8f2e6 0%, var(--bg) 100%);
+      min-height: 100vh;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: minmax(300px, 360px) 1fr;
+      gap: 20px;
+      padding: 20px;
+      max-width: 1480px;
+      margin: 0 auto;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 10px 30px rgba(80, 55, 20, 0.06);
+      position: sticky;
+      top: 16px;
+      max-height: calc(100vh - 32px);
+      overflow: auto;
+    }
+
+    h1 {
+      margin: 0 0 4px;
+      font-size: 1.35rem;
+      letter-spacing: 0.04em;
+      color: var(--accent);
+    }
+
+    .sub, .hint, .tip, .warn {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.55;
+    }
+
+    .sub { margin-bottom: 12px; }
+
+    .hint {
+      margin-top: 8px;
+      padding: 8px 10px;
+      background: #f3ebe0;
+      border-radius: 10px;
+    }
+
+    .warn {
+      margin-top: 10px;
+      padding: 8px 10px;
+      background: #fff1e4;
+      color: #8a4b12;
+      border-radius: 10px;
+    }
+
+    .warn:empty, .hint:empty { display: none; }
+
+    label.field {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin: 12px 0 6px;
+    }
+
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      font: inherit;
+      font-size: 0.92rem;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px 10px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .ops {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .ops label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0;
+      padding: 6px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      cursor: pointer;
+      color: var(--ink);
+      font-size: 0.9rem;
+    }
+
+    .ops label:has(input:checked) {
+      background: #f3e6d6;
+      border-color: #c4a484;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .ops label:has(input:disabled) {
+      color: #b3aa9f;
+      cursor: not-allowed;
+      background: #faf7f2;
+    }
+
+    .range {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .range span { color: var(--muted); font-size: 0.85rem; text-align: center; }
+
+    .checks {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .checks label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    details {
+      margin-top: 12px;
+      border-top: 1px solid var(--line);
+      padding-top: 10px;
+    }
+
+    summary {
+      cursor: pointer;
+      color: var(--accent);
+      font-size: 0.9rem;
+    }
+
+    .btns {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 9px 16px;
+      cursor: pointer;
+      font: inherit;
+      font-size: 0.9rem;
+    }
+
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-primary { background: var(--accent); color: #fff; flex: 1.2; }
+    .btn-secondary { background: #efe7da; color: var(--ink); flex: 1; }
+    .btn-primary:hover { filter: brightness(1.08); }
+    .btn-secondary:hover { filter: brightness(0.98); }
+
+    .tip { margin-top: 12px; }
+
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .preview { min-width: 0; overflow-x: auto; }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar .stat { color: var(--muted); font-size: 0.85rem; }
+
+    .timer-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #clock {
+      min-width: 3.2em;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+      font-size: 1.05rem;
+    }
+
+    .pages {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .page {
+      width: 210mm;
+      height: 297mm;
+      background: #fff;
+      border: 1px solid var(--line);
+      box-shadow: 0 12px 40px rgba(60, 40, 10, 0.08);
+      padding: 12mm 14mm 10mm;
+      display: flex;
+      flex-direction: column;
+      color: #111;
+      overflow: hidden;
+    }
+
+    .sheet-head h2 {
+      margin: 0;
+      text-align: center;
+      font-size: 22px;
+      letter-spacing: 0.32em;
+      font-weight: 700;
+    }
+
+    .sheet-head .kicker {
+      margin: 3px 0 0;
+      text-align: center;
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      color: #444;
+    }
+
+    .dline {
+      height: 4px;
+      border-top: 2.5px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+      margin: 8px 0 10px;
+    }
+
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 14px;
+      margin-bottom: 5mm;
+    }
+
+    .meta span {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      flex: 1;
+      min-width: 0;
+      white-space: nowrap;
+    }
+
+    .meta b { font-weight: 500; }
+
+    .meta i {
+      flex: 1;
+      min-width: 12mm;
+      height: 0.95em;
+      border-bottom: 1px solid #222;
+    }
+
+    .grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+      align-content: start;
+      align-items: start;
+      gap: 3mm 3.5mm;
+    }
+
+    .grid.spread { align-content: space-between; }
+
+    .problem {
+      display: flex;
+      align-items: baseline;
+      gap: 0.35em;
+      min-width: 0;
+      font-size: var(--q-size);
+      line-height: 1.45;
+      font-family: "Songti SC", "STSong", "SimSun", "Times New Roman", serif;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .problem.vert { align-items: flex-start; }
+
+    .idx {
+      flex: 0 0 auto;
+      min-width: 1.7em;
+      text-align: right;
+      color: #666;
+      font-size: 0.72em;
+      font-variant-numeric: tabular-nums;
+      font-family: "PingFang SC", "Hiragino Sans GB", sans-serif;
+    }
+
+    .expr {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: baseline;
+      gap: 0.1em 0.26em;
+      min-width: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .blank {
+      display: inline-block;
+      min-width: 2.5em;
+      text-align: center;
+      border-bottom: 1.5px solid #222;
+      line-height: 1.15;
+      padding: 0 0.12em 0.02em;
+    }
+
+    .fill { visibility: hidden; }
+    body.reveal .fill { visibility: visible; color: var(--ok); font-weight: 650; }
+
+    .stack {
+      display: grid;
+      grid-template-columns: 1.15em max-content;
+      column-gap: 0.2em;
+      justify-items: end;
+      align-items: baseline;
+      font-variant-numeric: tabular-nums;
+      min-width: 4.2em;
+    }
+
+    .stack i {
+      font-style: normal;
+      justify-self: center;
+      width: 1.15em;
+      text-align: center;
+    }
+
+    .stack b {
+      font-weight: 500;
+      min-width: 1.8em;
+      text-align: right;
+      letter-spacing: 0.02em;
+    }
+
+    .stack .bar {
+      grid-column: 1 / span 2;
+      width: 100%;
+      border-top: 2px solid #111;
+      height: 0;
+      margin: 2px 0 1px;
+    }
+
+    .stack .write {
+      min-height: 8mm;
+      display: block;
+    }
+
+    .sheet-head.compact .dline { margin-bottom: 6mm; }
+
+    .foot {
+      margin-top: auto;
+      text-align: center;
+      color: #888;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      padding-top: 3mm;
+    }
+
+    .answers {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      align-content: start;
+      gap: 3.2mm 4mm;
+      font-family: "Songti SC", "STSong", "SimSun", serif;
+      font-size: 14px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .answers.spread { align-content: space-between; }
+
+    .answers .no {
+      color: #666;
+      font-family: "PingFang SC", "Hiragino Sans GB", sans-serif;
+      font-size: 12px;
+      margin-right: 0.35em;
+    }
+
+    .empty-note {
+      margin: 12mm 0;
+      color: #666;
+      font-size: 16px;
+    }
+
+    @media (max-width: 980px) {
+      .app { grid-template-columns: 1fr; }
+      .panel { position: static; max-height: none; }
+      .pages { overflow-x: auto; align-items: flex-start; }
+    }
+
+    @page { size: A4; margin: 0; }
+
+    @media print {
+      body { background: #fff !important; }
+      .no-print { display: none !important; }
+      .app { display: block; padding: 0; max-width: none; }
+      .pages { gap: 0; }
+      .page {
+        border: none;
+        box-shadow: none;
+        margin: 0;
+        page-break-after: always;
+        break-after: page;
+      }
+      .page:last-child {
+        page-break-after: auto;
+        break-after: auto;
+      }
+      .fill { visibility: hidden !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="panel no-print">
+      <h1>小学生计算题</h1>
+      <p class="sub">按年级出一份口算卷，浏览器里直接打印成 A4。</p>
+
+      <label class="field" for="preset">题型</label>
+      <select id="preset"></select>
+      <p class="hint" id="hint"></p>
+
+      <label class="field">运算</label>
+      <div class="ops">
+        <label><input type="checkbox" id="op-add" /> <span>加法</span></label>
+        <label><input type="checkbox" id="op-sub" /> <span>减法</span></label>
+        <label><input type="checkbox" id="op-mul" /> <span>乘法</span></label>
+        <label><input type="checkbox" id="op-div" /> <span>除法</span></label>
+      </div>
+
+      <div class="row">
+        <div>
+          <label class="field" for="shape">算式</label>
+          <select id="shape">
+            <option value="bin">一步计算</option>
+            <option value="chain">连加连减</option>
+          </select>
+        </div>
+        <div>
+          <label class="field" for="carry">进退位</label>
+          <select id="carry">
+            <option value="any">不限</option>
+            <option value="must">必须进退位</option>
+            <option value="none">不进退位</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label class="field" for="div-mode">除法</label>
+          <select id="div-mode">
+            <option value="exact">整除</option>
+            <option value="rem">有余数</option>
+          </select>
+        </div>
+        <div>
+          <label class="field" for="blank">填空</label>
+          <select id="blank">
+            <option value="result">填得数</option>
+            <option value="unknown">填未知数</option>
+            <option value="mix">得数和未知数混合</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label class="field" for="layout">版式</label>
+          <select id="layout">
+            <option value="horizontal">横式</option>
+            <option value="vertical">竖式</option>
+          </select>
+        </div>
+        <div>
+          <label class="field" for="columns">每行题数</label>
+          <select id="columns">
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4" selected>4</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label class="field" for="count">题目数量</label>
+          <input id="count" type="number" min="1" max="200" step="1" value="40" />
+        </div>
+        <div>
+          <label class="field" for="title">卷头标题</label>
+          <input id="title" type="text" maxlength="16" value="口算练习" spellcheck="false" />
+        </div>
+      </div>
+
+      <div class="checks">
+        <label><input type="checkbox" id="show-index" checked /> 打印序号</label>
+        <label><input type="checkbox" id="group-ops" /> 相同运算排在一起</label>
+        <label><input type="checkbox" id="with-answers" /> 附上答案页（打印时一起出来）</label>
+      </div>
+
+      <details id="range-box">
+        <summary>调整数字范围</summary>
+        <label class="field">第一个数</label>
+        <div class="range">
+          <input id="a-min" type="number" min="0" max="9999" step="1" />
+          <span>至</span>
+          <input id="a-max" type="number" min="0" max="9999" step="1" />
+        </div>
+        <label class="field">第二个数</label>
+        <div class="range">
+          <input id="b-min" type="number" min="0" max="9999" step="1" />
+          <span>至</span>
+          <input id="b-max" type="number" min="0" max="9999" step="1" />
+        </div>
+        <label class="field" for="sum-max">加法得数不超过</label>
+        <input id="sum-max" type="number" min="0" max="9999" step="1" placeholder="不限" />
+        <div class="row">
+          <div>
+            <label class="field" for="dvd-min">被除数至少</label>
+            <input id="dvd-min" type="number" min="0" max="9999" step="1" placeholder="不限" />
+          </div>
+          <div>
+            <label class="field" for="dvd-max">被除数至多</label>
+            <input id="dvd-max" type="number" min="0" max="9999" step="1" placeholder="不限" />
+          </div>
+        </div>
+        <p class="hint" id="range-hint"></p>
+      </details>
+
+      <div class="btns">
+        <button type="button" class="btn-primary" id="btn-gen">换一组</button>
+        <button type="button" class="btn-secondary" id="btn-print">打印</button>
+      </div>
+      <p class="warn" id="warn" role="status"></p>
+      <p class="tip">打印时选 A4 纵向，边距选「无」，并关掉页眉页脚。竖式只排加、减、乘，除法仍用横式。</p>
+    </aside>
+
+    <main class="preview">
+      <div class="toolbar no-print">
+        <div class="stat" id="stat" aria-live="polite">正在出题</div>
+        <div class="timer-box">
+          <button type="button" class="btn-secondary" id="btn-timer">开始计时</button>
+          <strong id="clock">0:00</strong>
+          <button type="button" class="btn-secondary" id="btn-reveal" aria-pressed="false">对答案</button>
+        </div>
+      </div>
+      <div class="pages" id="pages"></div>
+    </main>
+  </div>
+
+  <script>
+    const PRESETS = {
+      add10: pack("一年级", "10以内加法", "两个加数都在 0 到 10 之间，得数不超过 10。", {
+        ops: { add: true }, aMin: 0, aMax: 10, bMin: 0, bMax: 10, sumMax: 10
+      }),
+      sub10: pack("一年级", "10以内减法", "被减数不超过 10，得数不为负数。", {
+        ops: { sub: true }, aMin: 0, aMax: 10, bMin: 0, bMax: 10
+      }),
+      as10: pack("一年级", "10以内加减", "10 以内的加法和减法，加法得数不超过 10。", {
+        ops: { add: true, sub: true }, aMin: 0, aMax: 10, bMin: 0, bMax: 10, sumMax: 10
+      }),
+      add20c: pack("一年级", "20以内进位加法", "两个一位数相加，个位满十，得数不超过 20。", {
+        ops: { add: true }, aMin: 1, aMax: 9, bMin: 1, bMax: 9, sumMax: 20, carry: "must", count: 36
+      }),
+      sub20b: pack("一年级", "20以内退位减法", "被减数在 11 到 20 之间，减数是一位数，并且需要退位。", {
+        ops: { sub: true }, aMin: 11, aMax: 20, bMin: 1, bMax: 9, carry: "must", count: 36
+      }),
+      as20: pack("一年级", "20以内加减", "20 以内加减，加法得数不超过 20。", {
+        ops: { add: true, sub: true }, aMin: 0, aMax: 20, bMin: 0, bMax: 20, sumMax: 20
+      }),
+      chain20: pack("一年级", "20以内连加连减", "三个数连加或连减，每一步的结果都在 0 到 20 之间。", {
+        ops: { add: true, sub: true }, shape: "chain", aMin: 0, aMax: 20, bMin: 1, bMax: 10, sumMax: 20, count: 30, columns: 3
+      }),
+      as100: pack("二年级", "100以内加减", "100 以内加减，以两位数为主，加法得数不超过 100。", {
+        ops: { add: true, sub: true }, aMin: 0, aMax: 100, bMin: 0, bMax: 100, sumMax: 100
+      }),
+      as100c: pack("二年级", "100以内进退位", "100 以内加减，并且一定要进位或退位。", {
+        ops: { add: true, sub: true }, aMin: 1, aMax: 100, bMin: 1, bMax: 99, sumMax: 100, carry: "must"
+      }),
+      mul9: pack("二年级", "表内乘法", "乘法口诀，因数从 1 到 9。", {
+        ops: { mul: true }, aMin: 1, aMax: 9, bMin: 1, bMax: 9
+      }),
+      div9: pack("二年级", "表内除法", "用乘法口诀做除法，都可以整除。", {
+        ops: { div: true }, aMin: 1, aMax: 9, bMin: 1, bMax: 9
+      }),
+      md9: pack("二年级", "表内乘除", "表内乘法和除法混在一起练。", {
+        ops: { mul: true, div: true }, aMin: 1, aMax: 9, bMin: 1, bMax: 9
+      }),
+      divrem: pack("二年级", "有余数除法", "一位数除两位数，商和余数都要填。", {
+        ops: { div: true }, aMin: 1, aMax: 9, bMin: 2, bMax: 9, divMode: "rem",
+        dividendMin: 10, dividendMax: 99, blank: "result"
+      }),
+      chain100: pack("二年级", "100以内连加连减", "三个数连加或连减，每一步的结果都不超过 100。", {
+        ops: { add: true, sub: true }, shape: "chain", aMin: 1, aMax: 80, bMin: 1, bMax: 40, sumMax: 100, count: 30, columns: 3
+      }),
+      as1000: pack("三年级", "千以内加减", "千以内加减，以三位数为主，得数不超过 999。", {
+        ops: { add: true, sub: true }, aMin: 0, aMax: 999, bMin: 0, bMax: 999, sumMax: 999, columns: 3, count: 30
+      }),
+      mul21: pack("三年级", "两位数乘一位数", "两位数乘一位数。", {
+        ops: { mul: true }, aMin: 10, aMax: 99, bMin: 2, bMax: 9
+      }),
+      div21: pack("三年级", "两位数除以一位数", "两位数除以一位数，可以整除。", {
+        ops: { div: true }, aMin: 2, aMax: 50, bMin: 2, bMax: 9, dividendMin: 10, dividendMax: 99
+      }),
+      mul22: pack("四年级", "两位数乘两位数", "两个两位数相乘。", {
+        ops: { mul: true }, aMin: 10, aMax: 99, bMin: 10, bMax: 99, columns: 3, count: 24
+      }),
+      mul31: pack("四年级", "三位数乘一位数", "三位数乘一位数。", {
+        ops: { mul: true }, aMin: 100, aMax: 999, bMin: 2, bMax: 9, columns: 3, count: 24
+      }),
+      as10000: pack("四年级", "万以内加减", "万以内加减，得数不超过 9999。", {
+        ops: { add: true, sub: true }, aMin: 100, aMax: 9999, bMin: 100, bMax: 9999, sumMax: 9999, columns: 2, count: 20
+      })
+    };
+
+    function pack(group, name, hint, extra) {
+      return Object.assign({
+        group, name, hint,
+        ops: { add: false, sub: false, mul: false, div: false },
+        shape: "bin",
+        carry: "any",
+        divMode: "exact",
+        blank: "result",
+        aMin: 0, aMax: 20, bMin: 0, bMax: 20,
+        sumMax: null,
+        dividendMin: null,
+        dividendMax: null,
+        count: 40,
+        columns: 4,
+        layout: "horizontal"
+      }, extra);
+    }
+
+    function rand(min, max) {
+      min = Math.ceil(Number(min));
+      max = Math.floor(Number(max));
+      if (!Number.isFinite(min) || !Number.isFinite(max)) return 0;
+      if (max < min) [min, max] = [max, min];
+      return min + Math.floor(Math.random() * (max - min + 1));
+    }
+
+    function randOperand(min, max) {
+      if (max >= 100 && Math.random() < 0.8) {
+        const floor = Math.max(min, 10 ** (String(max).length - 1));
+        if (floor <= max) return rand(floor, max);
+      }
+      return rand(min, max);
+    }
+
+    function hasCarry(a, b) {
+      let carry = 0;
+      let found = false;
+      while (a > 0 || b > 0) {
+        const sum = (a % 10) + (b % 10) + carry;
+        if (sum >= 10) found = true;
+        carry = sum >= 10 ? 1 : 0;
+        a = Math.floor(a / 10);
+        b = Math.floor(b / 10);
+      }
+      return found;
+    }
+
+    function hasBorrow(a, b) {
+      let borrow = 0;
+      let found = false;
+      while (a > 0 || b > 0) {
+        const da = (a % 10) - borrow;
+        const db = b % 10;
+        if (da < db) {
+          found = true;
+          borrow = 1;
+        } else {
+          borrow = 0;
+        }
+        a = Math.floor(a / 10);
+        b = Math.floor(b / 10);
+      }
+      return found;
+    }
+
+    function carryOk(mode, flag) {
+      if (mode === "must") return flag;
+      if (mode === "none") return !flag;
+      return true;
+    }
+
+    function activeOps(cfg) {
+      const list = [];
+      if (cfg.ops.add) list.push("+");
+      if (cfg.ops.sub) list.push("−");
+      if (cfg.shape !== "chain" && cfg.ops.mul) list.push("×");
+      if (cfg.shape !== "chain" && cfg.ops.div) list.push("÷");
+      return list;
+    }
+
+    function genAdd(cfg) {
+      const a = randOperand(cfg.aMin, cfg.aMax);
+      let bHi = cfg.bMax;
+      if (cfg.sumMax != null) bHi = Math.min(bHi, cfg.sumMax - a);
+      if (bHi < cfg.bMin) return null;
+      const b = randOperand(cfg.bMin, bHi);
+      if (a === 0 && b === 0) return null;
+      if (cfg.aMax > 20 && (a === 0 || b === 0)) return null;
+      if (!carryOk(cfg.carry, hasCarry(a, b))) return null;
+      if (cfg.sumMax != null && a + b > cfg.sumMax) return null;
+      return { kind: "bin", op: "+", a, b, result: a + b, rem: null };
+    }
+
+    function genSub(cfg) {
+      const a = randOperand(cfg.aMin, cfg.aMax);
+      const bHi = Math.min(cfg.bMax, a);
+      if (bHi < cfg.bMin) return null;
+      const b = randOperand(cfg.bMin, bHi);
+      if (a === 0 && b === 0) return null;
+      if (cfg.aMax > 20 && b === 0) return null;
+      if (a >= 100 && a === b) return null;
+      if (!carryOk(cfg.carry, hasBorrow(a, b))) return null;
+      return { kind: "bin", op: "−", a, b, result: a - b, rem: null };
+    }
+
+    function genMul(cfg) {
+      const a = rand(cfg.aMin, cfg.aMax);
+      const b = rand(cfg.bMin, cfg.bMax);
+      if (a === 0 || b === 0) return null;
+      if (!carryOk(cfg.carry, (a % 10) * (b % 10) >= 10)) return null;
+      return { kind: "bin", op: "×", a, b, result: a * b, rem: null };
+    }
+
+    function genDiv(cfg) {
+      const d = rand(Math.max(1, cfg.bMin), Math.max(1, cfg.bMax));
+      if (d < 1) return null;
+      if (cfg.divMode === "rem" && d < 2) return null;
+      const remMax = cfg.divMode === "rem" ? d - 1 : 0;
+      let qHi = cfg.aMax;
+      let qLo = Math.max(1, cfg.aMin);
+      if (cfg.dividendMax != null) qHi = Math.min(qHi, Math.floor((cfg.dividendMax - remMax) / d));
+      if (cfg.dividendMin != null) qLo = Math.max(qLo, Math.ceil(cfg.dividendMin / d));
+      if (qHi < qLo) return null;
+      const q = rand(qLo, qHi);
+      const r = cfg.divMode === "rem" ? rand(1, d - 1) : 0;
+      const dividend = q * d + r;
+      if (cfg.dividendMax != null && dividend > cfg.dividendMax) return null;
+      if (cfg.dividendMin != null && dividend < cfg.dividendMin) return null;
+      return { kind: "bin", op: "÷", a: dividend, b: d, result: q, rem: cfg.divMode === "rem" ? r : null };
+    }
+
+    function genChain(cfg) {
+      const ops = [];
+      if (cfg.ops.add) ops.push("+");
+      if (cfg.ops.sub) ops.push("−");
+      if (!ops.length) return null;
+      const limit = cfg.sumMax != null ? cfg.sumMax : Math.max(cfg.aMax, cfg.bMax, 0);
+      const cur0 = randOperand(cfg.aMin, Math.min(cfg.aMax, limit));
+      const tokens = [cur0];
+      let cur = cur0;
+      let saw = false;
+      for (let step = 0; step < 2; step++) {
+        const op = ops[rand(0, ops.length - 1)];
+        const n = rand(Math.max(cfg.bMin, 1), Math.max(cfg.bMax, 1));
+        if (n <= 0) return null;
+        if (op === "+") {
+          const next = cur + n;
+          if (next > limit) return null;
+          if (hasCarry(cur, n)) saw = true;
+          tokens.push("+", n);
+          cur = next;
+        } else {
+          const next = cur - n;
+          if (next < 0) return null;
+          if (hasBorrow(cur, n)) saw = true;
+          tokens.push("−", n);
+          cur = next;
+        }
+      }
+      if (!carryOk(cfg.carry, saw)) return null;
+      return { kind: "chain", op: "chain", tokens, result: cur, rem: null, a: null, b: null };
+    }
+
+    function genOne(cfg) {
+      if (cfg.shape === "chain") return genChain(cfg);
+      const ops = activeOps(cfg);
+      if (!ops.length) return null;
+      const op = ops[rand(0, ops.length - 1)];
+      if (op === "+") return genAdd(cfg);
+      if (op === "−") return genSub(cfg);
+      if (op === "×") return genMul(cfg);
+      return genDiv(cfg);
+    }
+
+    function verify(p) {
+      if (!p || p.result == null || !Number.isFinite(p.result)) return false;
+      if (p.kind === "chain") {
+        let cur = p.tokens[0];
+        if (!Number.isFinite(cur)) return false;
+        for (let i = 1; i < p.tokens.length; i += 2) {
+          const n = p.tokens[i + 1];
+          cur = p.tokens[i] === "+" ? cur + n : cur - n;
+          if (cur < 0) return false;
+        }
+        return cur === p.result;
+      }
+      if (p.op === "+") return p.a + p.b === p.result && p.result >= 0;
+      if (p.op === "−") return p.a - p.b === p.result && p.result >= 0 && p.a >= p.b;
+      if (p.op === "×") return p.a * p.b === p.result && p.a > 0 && p.b > 0;
+      if (p.op === "÷") {
+        const r = p.rem || 0;
+        return p.b > 0 && r >= 0 && r < p.b && p.b * p.result + r === p.a && p.result >= 1;
+      }
+      return false;
+    }
+
+    function pickSlot(cfg, p) {
+      if (p.kind === "chain" || p.rem != null) return "c";
+      if (cfg.layout === "vertical" && p.op !== "÷") return "c";
+      if (cfg.blank === "unknown") return Math.random() < 0.5 ? "a" : "b";
+      if (cfg.blank === "mix") {
+        const roll = Math.random();
+        if (roll < 0.5) return "c";
+        return roll < 0.75 ? "a" : "b";
+      }
+      return "c";
+    }
+
+    function keyOf(p) {
+      if (p.kind === "chain") return "c:" + p.tokens.join(",");
+      return ["b", p.op, p.a, p.b, p.rem ?? ""].join(":");
+    }
+
+    function generateAll(cfg) {
+      const target = cfg.count;
+      const seen = new Set();
+      const out = [];
+      let guard = 0;
+      const limit = Math.max(80, target * 80);
+      while (out.length < target && guard < limit) {
+        guard++;
+        const p = genOne(cfg);
+        if (!verify(p)) continue;
+        const key = keyOf(p);
+        if (seen.has(key) && guard < target * 40) continue;
+        seen.add(key);
+        p.slot = pickSlot(cfg, p);
+        out.push(p);
+      }
+      if (cfg.groupOps) {
+        const order = { "+": 1, "−": 2, "×": 3, "÷": 4, chain: 5 };
+        out.sort((a, b) => (order[a.op] || 9) - (order[b.op] || 9));
+      }
+      out.forEach((p, i) => { p.no = i + 1; });
+      return out;
+    }
+
+    function canonical(p) {
+      if (p.kind === "chain") {
+        const body = p.tokens.map((t) => (typeof t === "number" ? String(t) : " " + t + " ")).join("");
+        return body + " = " + p.result;
+      }
+      if (p.rem != null) return p.a + " ÷ " + p.b + " = " + p.result + " 余 " + p.rem;
+      return p.a + " " + p.op + " " + p.b + " = " + p.result;
+    }
+
+    function answerOf(p) {
+      if (p.slot === "a") return String(p.a);
+      if (p.slot === "b") return String(p.b);
+      if (p.rem != null) return p.result + "余" + p.rem;
+      return String(p.result);
+    }
+
+    function esc(s) {
+      return String(s).replace(/[&<>"']/g, (ch) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[ch]));
+    }
+
+    function blankHTML(value) {
+      return '<span class="blank"><span class="fill">' + esc(value) + "</span></span>";
+    }
+
+    function numHTML(value) {
+      return "<span>" + esc(value) + "</span>";
+    }
+
+    function exprHTML(p) {
+      if (p.kind === "chain") {
+        const body = p.tokens.map((t) => (
+          typeof t === "number" ? numHTML(t) : '<span class="op">' + esc(t) + "</span>"
+        )).join("");
+        return body + '<span class="op">=</span>' + blankHTML(p.result);
+      }
+      const A = p.slot === "a" ? blankHTML(p.a) : numHTML(p.a);
+      const B = p.slot === "b" ? blankHTML(p.b) : numHTML(p.b);
+      let C;
+      if (p.rem != null) {
+        C = blankHTML(p.result) + '<span class="op">余</span>' + blankHTML(p.rem);
+      } else {
+        C = p.slot === "c" ? blankHTML(p.result) : numHTML(p.result);
+      }
+      return A + '<span class="op">' + esc(p.op) + "</span>" + B + '<span class="op">=</span>' + C;
+    }
+
+    function verticalHTML(p) {
+      return (
+        '<div class="stack">' +
+          "<i></i><b>" + esc(p.a) + "</b>" +
+          "<i>" + esc(p.op) + "</i><b>" + esc(p.b) + "</b>" +
+          '<div class="bar"></div>' +
+          '<i></i><b class="write"><span class="fill">' + esc(p.result) + "</span></b>" +
+        "</div>"
+      );
+    }
+
+    function useVertical(cfg, p) {
+      return cfg.layout === "vertical" && p.kind === "bin" && p.slot === "c" && p.rem == null && p.op !== "÷";
+    }
+
+    function perPage(cfg) {
+      const cols = cfg.columns;
+      if (cfg.layout === "vertical") {
+        if (cols <= 2) return 10;
+        if (cols === 3) return 12;
+        return 16;
+      }
+      if (cols <= 2) return 20;
+      if (cols === 3) return 30;
+      return 40;
+    }
+
+    function chunk(list, size) {
+      const pages = [];
+      for (let i = 0; i < list.length; i += size) pages.push(list.slice(i, i + size));
+      return pages;
+    }
+
+    function subtitle(cfg, actual) {
+      const bits = [];
+      if (cfg.presetName) bits.push(cfg.presetName);
+      else if (cfg.shape === "chain") bits.push("连加连减");
+      else {
+        const names = [];
+        if (cfg.ops.add) names.push("加");
+        if (cfg.ops.sub) names.push("减");
+        if (cfg.ops.mul) names.push("乘");
+        if (cfg.ops.div) names.push("除");
+        bits.push((names.join("") || "计算") + "法");
+      }
+      if (!cfg.presetName && cfg.carry === "must") bits.push("含进退位");
+      if (!cfg.presetName && cfg.carry === "none") bits.push("不进退位");
+      if (!cfg.presetName && cfg.ops.div && cfg.divMode === "rem") bits.push("有余数");
+      bits.push((actual == null ? cfg.count : actual) + "题");
+      return bits.join(" · ");
+    }
+
+    function sheetHead(title, kicker, withMeta) {
+      const meta = withMeta
+        ? '<div class="meta">' +
+            "<span><b>姓名</b><i></i></span>" +
+            "<span><b>日期</b><i></i></span>" +
+            "<span><b>用时</b><i></i></span>" +
+            "<span><b>得分</b><i></i></span>" +
+          "</div>"
+        : "";
+      return (
+        '<header class="sheet-head' + (withMeta ? "" : " compact") + '">' +
+          "<h2>" + esc(title || "口算练习") + "</h2>" +
+          '<p class="kicker">' + esc(kicker) + "</p>" +
+          '<div class="dline"></div>' +
+          meta +
+        "</header>"
+      );
+    }
+
+    function questionSize(cfg, problems) {
+      if (cfg.layout === "vertical") return cfg.columns >= 4 ? 16 : 18;
+      let digits = 1;
+      problems.forEach((p) => {
+        const extra = p.kind === "chain"
+          ? p.tokens.reduce((sum, token) => sum + String(token).length, 0)
+          : String(p.a).length + String(p.b).length;
+        digits = Math.max(digits, extra + String(p.result).length);
+      });
+      let size = cfg.columns <= 2 ? 22 : cfg.columns === 3 ? 19 : 17;
+      if (cfg.columns >= 4 && digits >= 8) size = 15;
+      else if (cfg.columns >= 4 && digits >= 6) size = 16;
+      else if (cfg.columns === 3 && digits >= 12) size = 16;
+      else if (cfg.columns <= 2 && digits >= 14) size = 18;
+      return size;
+    }
+
+    function renderPages(cfg, problems) {
+      const pagesEl = document.getElementById("pages");
+      const qSize = questionSize(cfg, problems);
+      const head = sheetHead(cfg.title, subtitle(cfg, problems.length), true);
+      if (!problems.length) {
+        pagesEl.innerHTML = '<section class="page" style="--cols:' + cfg.columns + '">' + head +
+          '<p class="empty-note">这个范围凑不出题目。把进退位改成「不限」，或把数字范围放宽一些。</p></section>';
+        return 1;
+      }
+      const capacity = perPage(cfg);
+      const problemPages = chunk(problems, capacity);
+      const answerPages = cfg.withAnswers ? chunk(problems, 42) : [];
+      const total = problemPages.length + answerPages.length;
+      const html = [];
+      problemPages.forEach((group, pi) => {
+        const cells = group.map((p) => {
+          const vert = useVertical(cfg, p);
+          const body = vert ? verticalHTML(p) : '<div class="expr">' + exprHTML(p) + "</div>";
+          const idx = cfg.showIndex ? '<span class="idx">' + p.no + ".</span>" : "";
+          return '<div class="problem' + (vert ? " vert" : "") + '">' + idx + body + "</div>";
+        }).join("");
+        const spread = group.length >= Math.ceil(capacity * 0.7);
+        html.push(
+          '<section class="page" style="--cols:' + cfg.columns + ";--q-size:" + qSize + 'px">' +
+            head +
+            '<div class="grid' + (spread ? " spread" : "") + '">' + cells + "</div>" +
+            '<div class="foot">第 ' + (pi + 1) + " 页 / 共 " + total + " 页</div>" +
+          "</section>"
+        );
+      });
+      answerPages.forEach((group, ai) => {
+        const cells = group.map((p) => (
+          "<div>" + (cfg.showIndex ? "<span class=\"no\">" + p.no + ".</span>" : "") + esc(canonical(p)) + "</div>"
+        )).join("");
+        const index = problemPages.length + ai + 1;
+        const spreadAns = group.length >= 18;
+        html.push(
+          '<section class="page">' +
+            sheetHead("参考答案", subtitle(cfg, problems.length), false) +
+            '<div class="answers' + (spreadAns ? " spread" : "") + '">' + cells + "</div>" +
+            '<div class="foot">第 ' + index + " 页 / 共 " + total + " 页</div>" +
+          "</section>"
+        );
+      });
+      pagesEl.innerHTML = html.join("");
+      return total;
+    }
+
+    const CUSTOM_HINT = "加减法用这里的两个范围，减法保证第一个数不小于第二个数。乘法的两个数是因数。除法里，第一个数是商的范围，第二个数是除数。";
+
+    function init() {
+      const presetEl = document.getElementById("preset");
+      const hintEl = document.getElementById("hint");
+      const rangeHint = document.getElementById("range-hint");
+      const groups = [];
+      Object.keys(PRESETS).forEach((id) => {
+        const item = PRESETS[id];
+        let group = groups.find((g) => g.label === item.group);
+        if (!group) {
+          group = { label: item.group, options: [] };
+          groups.push(group);
+        }
+        group.options.push(id);
+      });
+      presetEl.innerHTML = groups.map((g) => (
+        '<optgroup label="' + esc(g.label) + '">' +
+          g.options.map((id) => '<option value="' + id + '">' + esc(PRESETS[id].name) + "</option>").join("") +
+        "</optgroup>"
+      )).join("") + '<option value="custom">自定义</option>';
+
+      const els = {
+        add: document.getElementById("op-add"),
+        sub: document.getElementById("op-sub"),
+        mul: document.getElementById("op-mul"),
+        div: document.getElementById("op-div"),
+        shape: document.getElementById("shape"),
+        carry: document.getElementById("carry"),
+        divMode: document.getElementById("div-mode"),
+        blank: document.getElementById("blank"),
+        layout: document.getElementById("layout"),
+        columns: document.getElementById("columns"),
+        count: document.getElementById("count"),
+        title: document.getElementById("title"),
+        showIndex: document.getElementById("show-index"),
+        groupOps: document.getElementById("group-ops"),
+        withAnswers: document.getElementById("with-answers"),
+        aMin: document.getElementById("a-min"),
+        aMax: document.getElementById("a-max"),
+        bMin: document.getElementById("b-min"),
+        bMax: document.getElementById("b-max"),
+        sumMax: document.getElementById("sum-max"),
+        dvdMin: document.getElementById("dvd-min"),
+        dvdMax: document.getElementById("dvd-max")
+      };
+
+      let lock = false;
+      let timerId = null;
+      let timerStart = 0;
+      let timerElapsed = 0;
+      let paintTimer = null;
+      let cachedKey = "";
+      let cachedProblems = [];
+
+      function numVal(el, fallback) {
+        if (el.value === "") return null;
+        const n = Math.round(Number(el.value));
+        if (!Number.isFinite(n)) return fallback;
+        return Math.min(9999, Math.max(0, n));
+      }
+
+      function setNum(el, value) {
+        el.value = value == null || value === "" ? "" : String(value);
+      }
+
+      function readConfig() {
+        let aMin = numVal(els.aMin, 0);
+        let aMax = numVal(els.aMax, 20);
+        let bMin = numVal(els.bMin, 0);
+        let bMax = numVal(els.bMax, 20);
+        if (aMin == null) aMin = 0;
+        if (aMax == null) aMax = aMin;
+        if (bMin == null) bMin = 0;
+        if (bMax == null) bMax = bMin;
+        if (aMax < aMin) [aMin, aMax] = [aMax, aMin];
+        if (bMax < bMin) [bMin, bMax] = [bMax, bMin];
+        let dvdMin = numVal(els.dvdMin, null);
+        let dvdMax = numVal(els.dvdMax, null);
+        if (dvdMin != null && dvdMax != null && dvdMax < dvdMin) [dvdMin, dvdMax] = [dvdMax, dvdMin];
+        const count = Math.min(200, Math.max(1, numVal(els.count, 40) || 40));
+        const presetId = presetEl.value;
+        return {
+          ops: {
+            add: els.add.checked,
+            sub: els.sub.checked,
+            mul: els.mul.checked && els.shape.value !== "chain",
+            div: els.div.checked && els.shape.value !== "chain"
+          },
+          shape: els.shape.value,
+          carry: els.carry.value,
+          divMode: els.divMode.value,
+          blank: els.blank.value,
+          layout: els.shape.value === "chain" ? "horizontal" : els.layout.value,
+          columns: Number(els.columns.value) || 4,
+          count,
+          title: els.title.value.trim() || "口算练习",
+          showIndex: els.showIndex.checked,
+          groupOps: els.groupOps.checked,
+          withAnswers: els.withAnswers.checked,
+          aMin, aMax, bMin, bMax,
+          sumMax: numVal(els.sumMax, null),
+          dividendMin: dvdMin,
+          dividendMax: dvdMax,
+          presetName: presetId !== "custom" && PRESETS[presetId] ? PRESETS[presetId].name : ""
+        };
+      }
+
+      function syncControls() {
+        const chain = els.shape.value === "chain";
+        els.mul.disabled = chain;
+        els.div.disabled = chain;
+        els.divMode.disabled = chain || !els.div.checked;
+        els.layout.disabled = chain;
+        els.carry.disabled = chain ? !(els.add.checked || els.sub.checked) : !(els.add.checked || els.sub.checked || els.mul.checked);
+        if (chain && els.layout.value === "vertical") els.layout.value = "horizontal";
+        const custom = presetEl.value === "custom";
+        hintEl.textContent = custom ? CUSTOM_HINT : (PRESETS[presetEl.value] ? PRESETS[presetEl.value].hint : "");
+        rangeHint.textContent = "除法：第一个数是商，第二个数是除数。被除数留空表示不额外限制。乘法看个位相乘算不算进位。";
+      }
+
+      function contentKey(cfg) {
+        return JSON.stringify({
+          ops: cfg.ops,
+          shape: cfg.shape,
+          carry: cfg.carry,
+          divMode: cfg.divMode,
+          blank: cfg.blank,
+          layout: cfg.layout,
+          groupOps: cfg.groupOps,
+          aMin: cfg.aMin,
+          aMax: cfg.aMax,
+          bMin: cfg.bMin,
+          bMax: cfg.bMax,
+          sumMax: cfg.sumMax,
+          dividendMin: cfg.dividendMin,
+          dividendMax: cfg.dividendMax,
+          count: cfg.count
+        });
+      }
+
+      function paint(resetClock) {
+        clearTimeout(paintTimer);
+        if (resetClock) resetTimer(false);
+        syncControls();
+        const cfg = readConfig();
+        const hasOp = cfg.shape === "chain"
+          ? (els.add.checked || els.sub.checked)
+          : (els.add.checked || els.sub.checked || els.mul.checked || els.div.checked);
+        const warn = document.getElementById("warn");
+        if (!hasOp) {
+          cachedKey = "";
+          cachedProblems = [];
+          document.getElementById("pages").innerHTML = "";
+          document.getElementById("stat").textContent = "先勾选至少一种运算";
+          warn.textContent = cfg.shape === "chain" ? "连加连减至少要勾选加法或减法。" : "请至少勾选一种运算。";
+          return;
+        }
+        const key = contentKey(cfg);
+        if (resetClock || key !== cachedKey) {
+          cachedProblems = generateAll(cfg);
+          cachedKey = key;
+        }
+        const problems = cachedProblems;
+        const pages = renderPages(cfg, problems);
+        const answerNote = cfg.withAnswers ? "，含答案页" : "";
+        document.getElementById("stat").textContent = "共 " + problems.length + " 题 · " + pages + " 页" + answerNote;
+        if (problems.length < cfg.count) {
+          warn.textContent = "这个范围只凑出 " + problems.length + " 题。可以放宽数字，或把进退位改成「不限」。";
+        } else {
+          warn.textContent = "";
+        }
+      }
+
+      function applyPreset(id) {
+        const item = PRESETS[id];
+        if (!item) return;
+        lock = true;
+        presetEl.value = id;
+        els.add.checked = !!item.ops.add;
+        els.sub.checked = !!item.ops.sub;
+        els.mul.checked = !!item.ops.mul;
+        els.div.checked = !!item.ops.div;
+        els.shape.value = item.shape;
+        els.carry.value = item.carry;
+        els.divMode.value = item.divMode;
+        els.blank.value = item.blank;
+        els.layout.value = item.layout;
+        els.columns.value = String(item.columns);
+        els.count.value = String(item.count);
+        setNum(els.aMin, item.aMin);
+        setNum(els.aMax, item.aMax);
+        setNum(els.bMin, item.bMin);
+        setNum(els.bMax, item.bMax);
+        setNum(els.sumMax, item.sumMax);
+        setNum(els.dvdMin, item.dividendMin);
+        setNum(els.dvdMax, item.dividendMax);
+        lock = false;
+        paint(false);
+      }
+
+      function markCustom(event) {
+        if (lock) return;
+        if (presetEl.value !== "custom") presetEl.value = "custom";
+        const id = event && event.target ? event.target.id : "";
+        if (/^(a|b)-(min|max)$|sum-max|dvd-/.test(id)) {
+          document.getElementById("range-box").open = true;
+        }
+        paint(false);
+      }
+
+      function onPresent() {
+        if (lock) return;
+        paint(false);
+      }
+
+      ["op-add", "op-sub", "op-mul", "op-div"].forEach((id) => {
+        document.getElementById(id).addEventListener("change", markCustom);
+      });
+      ["shape", "carry", "div-mode"].forEach((id) => {
+        document.getElementById(id).addEventListener("change", markCustom);
+      });
+      ["a-min", "a-max", "b-min", "b-max", "sum-max", "dvd-min", "dvd-max", "count"].forEach((id) => {
+        const el = document.getElementById(id);
+        const queued = (event) => {
+          const targetId = event.target.id;
+          clearTimeout(paintTimer);
+          paintTimer = setTimeout(() => {
+            if (id === "count") onPresent();
+            else markCustom({ target: { id: targetId } });
+          }, 160);
+        };
+        el.addEventListener("input", queued);
+        el.addEventListener("change", () => {
+          clearTimeout(paintTimer);
+          if (id === "count") onPresent();
+          else markCustom({ target: { id } });
+        });
+      });
+      ["blank", "layout", "columns", "show-index", "group-ops", "with-answers"].forEach((id) => {
+        document.getElementById(id).addEventListener("change", onPresent);
+      });
+      document.getElementById("title").addEventListener("input", onPresent);
+
+      presetEl.addEventListener("change", () => {
+        if (presetEl.value === "custom") {
+          document.getElementById("range-box").open = true;
+          paint(false);
+          return;
+        }
+        applyPreset(presetEl.value);
+      });
+
+      document.getElementById("btn-gen").addEventListener("click", () => paint(true));
+      document.getElementById("btn-print").addEventListener("click", () => window.print());
+
+      const revealBtn = document.getElementById("btn-reveal");
+      revealBtn.addEventListener("click", () => {
+        const on = document.body.classList.toggle("reveal");
+        revealBtn.textContent = on ? "隐藏答案" : "对答案";
+        revealBtn.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+
+      const clock = document.getElementById("clock");
+      const timerBtn = document.getElementById("btn-timer");
+
+      function formatTime(ms) {
+        const total = Math.floor(ms / 1000);
+        const m = Math.floor(total / 60);
+        const s = total % 60;
+        return m + ":" + String(s).padStart(2, "0");
+      }
+
+      function tick() {
+        clock.textContent = formatTime(timerElapsed + (Date.now() - timerStart));
+      }
+
+      function resetTimer(startAgain) {
+        if (timerId) {
+          clearInterval(timerId);
+          timerId = null;
+        }
+        timerElapsed = 0;
+        timerStart = 0;
+        clock.textContent = "0:00";
+        timerBtn.textContent = "开始计时";
+        if (startAgain) startTimer();
+      }
+
+      function startTimer() {
+        timerStart = Date.now();
+        timerId = setInterval(tick, 200);
+        timerBtn.textContent = "停止";
+        tick();
+      }
+
+      timerBtn.addEventListener("click", () => {
+        if (timerId) {
+          timerElapsed += Date.now() - timerStart;
+          clearInterval(timerId);
+          timerId = null;
+          timerBtn.textContent = "继续";
+          tick();
+          return;
+        }
+        startTimer();
+      });
+
+      document.querySelectorAll('input[type="number"]').forEach((el) => {
+        el.addEventListener("wheel", () => el.blur(), { passive: true });
+      });
+
+      const params = new URLSearchParams(location.search);
+      const wanted = params.get("preset");
+      applyPreset(PRESETS[wanted] ? wanted : "as20");
+      if (params.get("layout") === "vertical" || params.get("layout") === "horizontal") {
+        els.layout.value = params.get("layout");
+      }
+      if (params.get("count")) els.count.value = String(Math.min(200, Math.max(1, Number(params.get("count")) || 40)));
+      if (params.get("answers") === "1") els.withAnswers.checked = true;
+      if (params.get("show") === "1") {
+        document.body.classList.add("reveal");
+        revealBtn.textContent = "隐藏答案";
+        revealBtn.setAttribute("aria-pressed", "true");
+      }
+      if (params.get("layout") || params.get("count") || params.get("answers") || params.get("show")) paint(false);
+
+      globalThis.SuanTi.readConfig = readConfig;
+    }
+
+    globalThis.SuanTi = { PRESETS, generateAll, canonical, answerOf, verify, hasCarry, hasBorrow };
+
+    if (typeof document !== "undefined") init();
+  </script>
+</body>
+</html>
