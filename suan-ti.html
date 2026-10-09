@@ -109,6 +109,27 @@
       gap: 10px;
     }
 
+    .ctrl {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .ctrl input[type="range"] {
+      flex: 1;
+      width: auto;
+      accent-color: var(--accent);
+    }
+
+    .ctrl output {
+      min-width: 3.2em;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      color: var(--ink);
+      font-size: 0.85rem;
+    }
+
     .ops {
       display: flex;
       flex-wrap: wrap;
@@ -257,7 +278,7 @@
     .sheet-head h2 {
       margin: 0;
       text-align: center;
-      font-size: 22px;
+      font-size: var(--title-size, 22px);
       letter-spacing: 0.32em;
       font-weight: 700;
     }
@@ -265,7 +286,7 @@
     .sheet-head .kicker {
       margin: 3px 0 0;
       text-align: center;
-      font-size: 13px;
+      font-size: calc(var(--title-size, 22px) * 0.58);
       letter-spacing: 0.12em;
       color: #444;
     }
@@ -414,7 +435,7 @@
       align-content: start;
       gap: 3.2mm 4mm;
       font-family: "Songti SC", "STSong", "SimSun", serif;
-      font-size: 14px;
+      font-size: var(--a-size, 14px);
       font-variant-numeric: tabular-nums;
     }
 
@@ -423,7 +444,7 @@
     .answers .no {
       color: #666;
       font-family: "PingFang SC", "Hiragino Sans GB", sans-serif;
-      font-size: 12px;
+      font-size: 0.85em;
       margin-right: 0.35em;
     }
 
@@ -543,6 +564,13 @@
           <input id="title" type="text" maxlength="16" value="口算练习" spellcheck="false" />
         </div>
       </div>
+
+      <label class="field">题目大小
+        <span class="ctrl"><input id="q-size" type="range" min="12" max="48" value="18" /><output id="q-size-out">18px</output></span>
+      </label>
+      <label class="field">标题大小
+        <span class="ctrl"><input id="title-size" type="range" min="16" max="40" value="22" /><output id="title-size-out">22px</output></span>
+      </label>
 
       <div class="checks">
         <label><input type="checkbox" id="show-index" checked /> 打印序号</label>
@@ -966,15 +994,14 @@
     }
 
     function perPage(cfg) {
-      const cols = cfg.columns;
+      const cols = cfg.columns || 4;
+      const size = Math.min(48, Math.max(12, cfg.qSize || 18));
       if (cfg.layout === "vertical") {
-        if (cols <= 2) return 10;
-        if (cols === 3) return 12;
-        return 16;
+        const rows = Math.max(2, Math.min(5, Math.floor(560 / (size * 5 + 28))));
+        return rows * cols;
       }
-      if (cols <= 2) return 20;
-      if (cols === 3) return 30;
-      return 40;
+      const rows = Math.max(4, Math.min(10, Math.floor(820 / (size * 1.85 + 14))));
+      return rows * cols;
     }
 
     function chunk(list, size) {
@@ -1021,29 +1048,22 @@
       );
     }
 
-    function questionSize(cfg, problems) {
-      if (cfg.layout === "vertical") return cfg.columns >= 4 ? 16 : 18;
-      let digits = 1;
-      problems.forEach((p) => {
-        const extra = p.kind === "chain"
-          ? p.tokens.reduce((sum, token) => sum + String(token).length, 0)
-          : String(p.a).length + String(p.b).length;
-        digits = Math.max(digits, extra + String(p.result).length);
-      });
-      let size = cfg.columns <= 2 ? 22 : cfg.columns === 3 ? 19 : 17;
-      if (cfg.columns >= 4 && digits >= 8) size = 15;
-      else if (cfg.columns >= 4 && digits >= 6) size = 16;
-      else if (cfg.columns === 3 && digits >= 12) size = 16;
-      else if (cfg.columns <= 2 && digits >= 14) size = 18;
-      return size;
+    function pageStyle(cfg) {
+      const qSize = Math.min(48, Math.max(12, cfg.qSize || 18));
+      const titleSize = Math.min(40, Math.max(16, cfg.titleSize || 22));
+      const answerSize = Math.max(12, Math.round(qSize * 0.78));
+      return "--cols:" + (cfg.columns || 4) +
+        ";--q-size:" + qSize + "px" +
+        ";--title-size:" + titleSize + "px" +
+        ";--a-size:" + answerSize + "px";
     }
 
     function renderPages(cfg, problems) {
       const pagesEl = document.getElementById("pages");
-      const qSize = questionSize(cfg, problems);
+      const style = pageStyle(cfg);
       const head = sheetHead(cfg.title, subtitle(cfg, problems.length), true);
       if (!problems.length) {
-        pagesEl.innerHTML = '<section class="page" style="--cols:' + cfg.columns + '">' + head +
+        pagesEl.innerHTML = '<section class="page" style="' + style + '">' + head +
           '<p class="empty-note">这个范围凑不出题目。把进退位改成「不限」，或把数字范围放宽一些。</p></section>';
         return 1;
       }
@@ -1061,7 +1081,7 @@
         }).join("");
         const spread = group.length >= Math.ceil(capacity * 0.7);
         html.push(
-          '<section class="page" style="--cols:' + cfg.columns + ";--q-size:" + qSize + 'px">' +
+          '<section class="page" style="' + style + '">' +
             head +
             '<div class="grid' + (spread ? " spread" : "") + '">' + cells + "</div>" +
             '<div class="foot">第 ' + (pi + 1) + " 页 / 共 " + total + " 页</div>" +
@@ -1075,7 +1095,7 @@
         const index = problemPages.length + ai + 1;
         const spreadAns = group.length >= 18;
         html.push(
-          '<section class="page">' +
+          '<section class="page" style="' + style + '">' +
             sheetHead("参考答案", subtitle(cfg, problems.length), false) +
             '<div class="answers' + (spreadAns ? " spread" : "") + '">' + cells + "</div>" +
             '<div class="foot">第 ' + index + " 页 / 共 " + total + " 页</div>" +
@@ -1119,6 +1139,10 @@
         blank: document.getElementById("blank"),
         layout: document.getElementById("layout"),
         columns: document.getElementById("columns"),
+        qSize: document.getElementById("q-size"),
+        qSizeOut: document.getElementById("q-size-out"),
+        titleSize: document.getElementById("title-size"),
+        titleSizeOut: document.getElementById("title-size-out"),
         count: document.getElementById("count"),
         title: document.getElementById("title"),
         showIndex: document.getElementById("show-index"),
@@ -1140,6 +1164,12 @@
       let paintTimer = null;
       let cachedKey = "";
       let cachedProblems = [];
+
+      function clampSize(el, lo, hi, fallback) {
+        const n = Math.round(Number(el && el.value));
+        if (!Number.isFinite(n)) return fallback;
+        return Math.min(hi, Math.max(lo, n));
+      }
 
       function numVal(el, fallback) {
         if (el.value === "") return null;
@@ -1181,6 +1211,8 @@
           blank: els.blank.value,
           layout: els.shape.value === "chain" ? "horizontal" : els.layout.value,
           columns: Number(els.columns.value) || 4,
+          qSize: clampSize(els.qSize, 12, 48, 18),
+          titleSize: clampSize(els.titleSize, 16, 40, 22),
           count,
           title: els.title.value.trim() || "口算练习",
           showIndex: els.showIndex.checked,
@@ -1329,6 +1361,14 @@
         document.getElementById(id).addEventListener("change", onPresent);
       });
       document.getElementById("title").addEventListener("input", onPresent);
+
+      function bindRange(input, output) {
+        const sync = () => { output.textContent = input.value + "px"; };
+        input.addEventListener("input", () => { sync(); onPresent(); });
+        sync();
+      }
+      bindRange(els.qSize, els.qSizeOut);
+      bindRange(els.titleSize, els.titleSizeOut);
 
       presetEl.addEventListener("change", () => {
         if (presetEl.value === "custom") {
