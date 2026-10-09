@@ -58,6 +58,17 @@
       overflow: auto;
     }
 
+    .home {
+      display: inline-block;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+      text-decoration: none;
+    }
+
+    .home:hover { color: var(--accent); }
+
     h1 {
       margin: 0 0 4px;
       font-size: 1.35rem;
@@ -487,6 +498,7 @@
 <body>
   <div class="app">
     <aside class="panel no-print">
+      <a class="home" href="index.html">全部工具</a>
       <h1>古诗拼音排版</h1>
       <p class="sub">输入古诗，自动注音排版，支持 A4 打印。可手动调每页首数与单个注音。</p>
 

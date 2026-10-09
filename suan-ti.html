@@ -52,6 +52,17 @@
       overflow: auto;
     }
 
+    .home {
+      display: inline-block;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+      text-decoration: none;
+    }
+
+    .home:hover { color: var(--accent); }
+
     h1 {
       margin: 0 0 4px;
       font-size: 1.35rem;
@@ -485,6 +496,7 @@
 <body>
   <div class="app">
     <aside class="panel no-print">
+      <a class="home" href="index.html">全部工具</a>
       <h1>小学生计算题</h1>
       <p class="sub">按年级出一份口算卷，浏览器里直接打印成 A4。</p>
 
