@@ -1,47 +1,194 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>自动生成中文字卡片</title>
+    <title>中文字卡片</title>
     <style>
-        @page { size: A4; margin: 0; }
-        body { margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; }
-        .controls { 
-            position: absolute; 
-            top: 10px; 
-            left: 10px; 
-            background: rgba(255, 255, 255, 0.9); 
-            padding: 10px; 
-            border-radius: 5px; 
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); 
-            display: block; /* 确保输入框可见 */
+        :root { color-scheme: dark; }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            color: #e7f6ff;
+            background-color: #0c2344;
+            background-image:
+                linear-gradient(rgba(94, 196, 255, 0.16) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(94, 196, 255, 0.16) 1px, transparent 1px);
+            background-size: 22px 22px;
         }
+
+        .app {
+            display: grid;
+            grid-template-columns: minmax(280px, 340px) 1fr;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1480px;
+            margin: 0 auto;
+            align-items: start;
+        }
+
+        .controls {
+            background:
+                linear-gradient(#7ee7ff, #7ee7ff) left top / 14px 2px no-repeat,
+                linear-gradient(#7ee7ff, #7ee7ff) left top / 2px 14px no-repeat,
+                linear-gradient(#7ee7ff, #7ee7ff) right top / 14px 2px no-repeat,
+                linear-gradient(#7ee7ff, #7ee7ff) right top / 2px 14px no-repeat,
+                linear-gradient(#7ee7ff, #7ee7ff) left bottom / 14px 2px no-repeat,
+                linear-gradient(#7ee7ff, #7ee7ff) left bottom / 2px 14px no-repeat,
+                linear-gradient(#7ee7ff, #7ee7ff) right bottom / 14px 2px no-repeat,
+                linear-gradient(#7ee7ff, #7ee7ff) right bottom / 2px 14px no-repeat,
+                rgba(8, 28, 58, 0.92);
+            border: 1px solid rgba(126, 231, 255, 0.28);
+            border-radius: 2px;
+            padding: 16px;
+            position: sticky;
+            top: 16px;
+        }
+
         .home {
             display: inline-block;
-            margin-bottom: 8px;
-            color: #6b6258;
-            font-size: 13px;
+            margin-bottom: 10px;
+            color: #7ee7ff;
+            font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+            font-size: 0.72rem;
+            letter-spacing: 0.12em;
             text-decoration: none;
         }
-        .home:hover { color: #8b4513; }
-        .page { display: grid; grid-template-rows: repeat(4, 0fr); grid-template-columns: repeat(3, 1fr); width: 21cm; height: 29.7cm; box-sizing: border-box; page-break-after: always; }
-        .card { display: flex; align-items: center; justify-content: center; width: 7cm; height: 7cm; border: 1px dashed #000; box-sizing: border-box; }
-        .card span { font-size: 230px; font-family: "KaiTi", "SimSun", serif; text-align: center; }
+
+        .home:hover { color: #fff; }
+
+        h1 {
+            margin: 0 0 4px;
+            font-size: 1.35rem;
+            letter-spacing: 0.08em;
+            font-weight: 560;
+        }
+
+        .sub {
+            margin: 0 0 14px;
+            color: #b7d7ea;
+            font-size: 0.86rem;
+            line-height: 1.5;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 140px;
+            resize: vertical;
+            padding: 10px 12px;
+            border: 1px solid rgba(126, 231, 255, 0.35);
+            border-radius: 2px;
+            background: rgba(4, 16, 36, 0.65);
+            color: #e7f6ff;
+            font: inherit;
+            line-height: 1.6;
+        }
+
+        textarea::placeholder { color: #7fa3bb; }
+
+        .btns {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        button {
+            flex: 1;
+            border: 1px solid rgba(126, 231, 255, 0.45);
+            border-radius: 2px;
+            padding: 9px 12px;
+            cursor: pointer;
+            font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+            letter-spacing: 0.06em;
+            font-size: 0.82rem;
+            background: transparent;
+            color: #e7f6ff;
+        }
+
+        .btn-primary {
+            background: #7ee7ff;
+            border-color: #7ee7ff;
+            color: #062033;
+        }
+
+        .preview {
+            min-width: 0;
+        }
+
+        #cardsContainer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .page {
+            display: grid;
+            grid-template-rows: repeat(4, 0fr);
+            grid-template-columns: repeat(3, 1fr);
+            width: 21cm;
+            height: 29.7cm;
+            background: #fff;
+            color: #111;
+            box-shadow: 0 18px 48px rgba(0, 0, 0, 0.38);
+            page-break-after: always;
+        }
+
+        .card {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 7cm;
+            height: 7cm;
+            border: 1px dashed #000;
+            background: #fff;
+            color: #111;
+        }
+
+        .card span {
+            font-size: 230px;
+            font-family: "KaiTi", "Kaiti SC", "SimSun", serif;
+            text-align: center;
+            color: #111;
+            line-height: 1;
+        }
+
+        @page { size: A4; margin: 0; }
+
+        @media (max-width: 980px) {
+            .app { grid-template-columns: 1fr; }
+            .controls { position: static; }
+        }
+
         @media print {
-            .controls { display: none; }
+            body { background: #fff !important; color: #111; color-scheme: light; }
+            .controls { display: none !important; }
+            .app { display: block; padding: 0; max-width: none; }
+            #cardsContainer { gap: 0; }
+            .page { box-shadow: none; }
         }
     </style>
 </head>
 <body>
-    <div class="controls">
-        <a class="home" href="index.html">全部工具</a><br>
-        <textarea id="textInput" rows="3" cols="50" placeholder="请输入文字..."></textarea>
-        <button onclick="createCards()">生成卡片</button>
-
-        <button onclick="createCards();window.print()">一键打印</button>
+    <div class="app">
+        <aside class="controls">
+            <a class="home" href="index.html">全部工具</a>
+            <h1>中文字卡片</h1>
+            <p class="sub">输入文字，按页生成大方块汉字卡片，方便裁开使用。</p>
+            <textarea id="textInput" rows="3" placeholder="请输入文字..."></textarea>
+            <div class="btns">
+                <button class="btn-primary" type="button" onclick="createCards()">生成卡片</button>
+                <button type="button" onclick="createCards();window.print()">一键打印</button>
+            </div>
+        </aside>
+        <main class="preview">
+            <div id="cardsContainer"></div>
+        </main>
     </div>
-    <div id="cardsContainer"></div>
 
     <script>
         function createCards() {
@@ -50,7 +197,7 @@
             const cardsPerPage = 12;
             const container = document.getElementById('cardsContainer');
             container.innerHTML = '';
-            
+
             let currentPage = null;
             characters.forEach((char, index) => {
                 if (index % cardsPerPage === 0) {

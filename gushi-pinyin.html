@@ -7,13 +7,11 @@
   <script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.26.0/dist/index.js"></script>
   <style>
     :root {
-      --bg: #f6f3ec;
-      --panel: #fffdf8;
-      --ink: #1f1a14;
-      --muted: #6b6258;
-      --line: #ddd4c5;
-      --accent: #8b4513;
-      --accent-soft: #c4a484;
+      color-scheme: dark;
+      --ink: #e7f6ff;
+      --muted: #b7d7ea;
+      --line: rgba(126, 231, 255, 0.28);
+      --accent: #7ee7ff;
       --grid: #c9c0b0;
       --han-size: 28px;
       --py-size: 12px;
@@ -30,9 +28,11 @@
       margin: 0;
       font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
       color: var(--ink);
-      background:
-        radial-gradient(ellipse at top, #fff9ef 0%, transparent 55%),
-        linear-gradient(180deg, #f8f2e6 0%, var(--bg) 100%);
+      background-color: #0c2344;
+      background-image:
+        linear-gradient(rgba(94, 196, 255, 0.16) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(94, 196, 255, 0.16) 1px, transparent 1px);
+      background-size: 22px 22px;
       min-height: 100vh;
     }
 
@@ -46,11 +46,19 @@
     }
 
     .panel {
-      background: var(--panel);
+      background:
+        linear-gradient(#7ee7ff, #7ee7ff) left top / 14px 2px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) left top / 2px 14px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) right top / 14px 2px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) right top / 2px 14px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) left bottom / 14px 2px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) left bottom / 2px 14px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) right bottom / 14px 2px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) right bottom / 2px 14px no-repeat,
+        rgba(8, 28, 58, 0.92);
       border: 1px solid var(--line);
-      border-radius: 14px;
+      border-radius: 2px;
       padding: 16px;
-      box-shadow: 0 10px 30px rgba(80, 55, 20, 0.06);
       height: fit-content;
       position: sticky;
       top: 16px;
@@ -61,19 +69,21 @@
     .home {
       display: inline-block;
       margin-bottom: 10px;
-      color: var(--muted);
-      font-size: 0.78rem;
-      letter-spacing: 0.06em;
+      color: var(--accent);
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
       text-decoration: none;
     }
 
-    .home:hover { color: var(--accent); }
+    .home:hover { color: #fff; }
 
     h1 {
       margin: 0 0 4px;
       font-size: 1.35rem;
-      letter-spacing: 0.04em;
-      color: var(--accent);
+      letter-spacing: 0.08em;
+      font-weight: 560;
+      color: var(--ink);
     }
 
     .sub {
@@ -95,15 +105,27 @@
       font: inherit;
     }
 
+    textarea, select, input[type="number"], input[type="text"] {
+      border: 1px solid rgba(126, 231, 255, 0.35);
+      border-radius: 2px;
+      padding: 8px 10px;
+      background: rgba(4, 16, 36, 0.65);
+      color: var(--ink);
+    }
+
+    select, input[type="number"] {
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    }
+
     textarea {
       min-height: 220px;
       resize: vertical;
-      border: 1px solid var(--line);
-      border-radius: 10px;
       padding: 10px 12px;
-      background: #fff;
       line-height: 1.6;
+      font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
     }
+
+    textarea::placeholder, input::placeholder { color: #7fa3bb; }
 
     .row {
       display: grid;
@@ -116,6 +138,8 @@
       align-items: center;
       gap: 8px;
     }
+
+    .ctrl input[type="range"] { accent-color: var(--accent); }
 
     .ctrl output {
       min-width: 3.2em;
@@ -133,29 +157,37 @@
     }
 
     button {
-      border: none;
-      border-radius: 999px;
+      border: 1px solid rgba(126, 231, 255, 0.45);
+      border-radius: 2px;
       padding: 9px 16px;
       cursor: pointer;
-      font: inherit;
-      font-size: 0.9rem;
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      letter-spacing: 0.06em;
+      font-size: 0.82rem;
+      background: transparent;
+      color: var(--ink);
     }
 
     .btn-primary {
       background: var(--accent);
-      color: #fff;
+      border-color: var(--accent);
+      color: #062033;
     }
 
     .btn-secondary {
-      background: #efe7da;
+      background: transparent;
       color: var(--ink);
     }
+
+    .btn-secondary:hover { border-color: var(--accent); }
+    .btn-primary:hover { filter: brightness(1.06); }
 
     .hint {
       margin-top: 12px;
       padding: 10px 12px;
-      background: #f3ebe0;
-      border-radius: 10px;
+      background: rgba(4, 16, 36, 0.45);
+      border: 1px solid rgba(126, 231, 255, 0.2);
+      border-radius: 2px;
       color: var(--muted);
       font-size: 0.8rem;
       line-height: 1.55;
@@ -190,8 +222,9 @@
       width: 210mm;
       min-height: 297mm;
       background: #fff;
-      border: 1px solid var(--line);
-      box-shadow: 0 12px 40px rgba(60, 40, 10, 0.08);
+      color: #1a1a1a;
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.38);
       padding: var(--page-margin);
       display: flex;
       flex-direction: column;
@@ -320,16 +353,16 @@
       cursor: pointer;
     }
     .pinyin.editable:hover {
-      color: var(--accent);
-      background: rgba(139, 69, 19, 0.08);
+      color: #0b6a84;
+      background: rgba(11, 106, 132, 0.08);
     }
     .pinyin.manual {
-      color: var(--accent);
-      box-shadow: inset 0 -1px 0 var(--accent);
+      color: #0b6a84;
+      box-shadow: inset 0 -1px 0 #0b6a84;
     }
     .pinyin.editing {
-      outline: 1px solid var(--accent);
-      background: #fff8ef;
+      outline: 1px solid #0b6a84;
+      background: #f4fbfe;
       cursor: text;
       transform: none !important;
       min-width: 2.5em;
@@ -339,13 +372,23 @@
     .py-editor {
       position: fixed;
       z-index: 9999;
-      background: #fffdf8;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      box-shadow: 0 12px 36px rgba(60,40,10,0.18);
+      background:
+        linear-gradient(#7ee7ff, #7ee7ff) left top / 12px 2px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) left top / 2px 12px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) right top / 12px 2px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) right top / 2px 12px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) left bottom / 12px 2px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) left bottom / 2px 12px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) right bottom / 12px 2px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) right bottom / 2px 12px no-repeat,
+        #0c2748;
+      border: 1px solid rgba(126, 231, 255, 0.4);
+      border-radius: 2px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
       padding: 12px;
       width: 260px;
       display: none;
+      color: var(--ink);
     }
     .py-editor.show { display: block; }
     .py-editor .hd {
@@ -357,10 +400,12 @@
     .py-editor input {
       width: 100%;
       padding: 8px 10px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
+      border: 1px solid rgba(126, 231, 255, 0.35);
+      border-radius: 2px;
       font-size: 1rem;
       margin-bottom: 8px;
+      background: rgba(4, 16, 36, 0.65);
+      color: var(--ink);
     }
     .py-editor .alts {
       display: flex;
@@ -371,13 +416,14 @@
     }
     .py-editor .alts button {
       padding: 4px 10px;
-      border-radius: 999px;
-      background: #efe7da;
+      border-radius: 2px;
+      background: transparent;
       font-size: 0.85rem;
     }
     .py-editor .alts button.active {
       background: var(--accent);
-      color: #fff;
+      border-color: var(--accent);
+      color: #062033;
     }
     .py-editor .actions {
       display: flex;
@@ -386,7 +432,7 @@
     }
     .py-editor .actions button {
       padding: 6px 12px;
-      border-radius: 999px;
+      border-radius: 2px;
       font-size: 0.85rem;
     }
 
@@ -431,9 +477,9 @@
       color: var(--muted);
       padding: 60px 20px;
       text-align: center;
-      background: #fff;
-      border: 1px dashed var(--line);
-      border-radius: 12px;
+      background: rgba(8, 28, 58, 0.72);
+      border: 1px dashed rgba(126, 231, 255, 0.45);
+      border-radius: 2px;
     }
 
     @media (max-width: 980px) {
@@ -459,6 +505,8 @@
     @media print {
       body {
         background: #fff !important;
+        color: #111;
+        color-scheme: light;
       }
       .no-print { display: none !important; }
       .app {

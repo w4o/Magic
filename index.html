@@ -6,13 +6,10 @@
   <title>学习小工具</title>
   <style>
     :root {
-      color-scheme: light;
-      --bg: #f6f3ec;
-      --panel: #fffdf8;
-      --ink: #1f1a14;
-      --muted: #6b6258;
-      --line: #ddd4c5;
-      --accent: #8b4513;
+      color-scheme: dark;
+      --ink: #e7f6ff;
+      --muted: #b7d7ea;
+      --accent: #7ee7ff;
     }
 
     * { box-sizing: border-box; }
@@ -22,9 +19,11 @@
       min-height: 100vh;
       font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
       color: var(--ink);
-      background:
-        radial-gradient(ellipse at top, #fff9ef 0%, transparent 55%),
-        linear-gradient(180deg, #f8f2e6 0%, var(--bg) 100%);
+      background-color: #0c2344;
+      background-image:
+        linear-gradient(rgba(94, 196, 255, 0.16) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(94, 196, 255, 0.16) 1px, transparent 1px);
+      background-size: 22px 22px;
     }
 
     .wrap {
@@ -33,16 +32,21 @@
       padding: 56px 20px 40px;
     }
 
-    header {
-      margin-bottom: 28px;
+    header { margin-bottom: 28px; }
+
+    .kicker {
+      margin: 0 0 8px;
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      color: var(--accent);
     }
 
     h1 {
       margin: 0 0 8px;
       font-size: 1.8rem;
-      letter-spacing: 0.08em;
-      color: var(--accent);
-      font-weight: 650;
+      letter-spacing: 0.12em;
+      font-weight: 560;
     }
 
     .sub {
@@ -62,41 +66,55 @@
       display: flex;
       flex-direction: column;
       min-height: 220px;
-      padding: 22px 20px 18px;
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(80, 55, 20, 0.06);
+      padding: 18px 18px 16px;
       color: inherit;
       text-decoration: none;
-      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+      border: 1px solid rgba(126, 231, 255, 0.28);
+      border-radius: 2px;
+      background:
+        linear-gradient(#7ee7ff, #7ee7ff) left top / 14px 2px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) left top / 2px 14px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) right top / 14px 2px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) right top / 2px 14px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) left bottom / 14px 2px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) left bottom / 2px 14px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) right bottom / 14px 2px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) right bottom / 2px 14px no-repeat,
+        rgba(8, 28, 58, 0.88);
     }
 
     a.card:hover,
     a.card:focus-visible {
-      transform: translateY(-3px);
-      border-color: #c9b89a;
-      box-shadow: 0 16px 36px rgba(80, 55, 20, 0.1);
+      border-color: #7ee7ff;
       outline: none;
     }
 
+    .fig {
+      margin-bottom: 10px;
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+    }
+
     .mark {
-      width: 52px;
-      height: 52px;
+      width: 46px;
+      height: 46px;
       display: grid;
       place-items: center;
-      margin-bottom: 18px;
-      border-radius: 14px;
-      background: #f3ebe0;
+      margin-bottom: 16px;
+      border: 1px solid var(--accent);
       color: var(--accent);
-      font-size: 1.45rem;
-      font-family: "Kaiti SC", "STKaiti", "KaiTi", serif;
+      background: transparent;
+      font-size: 1.25rem;
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
     }
 
     h2 {
       margin: 0 0 8px;
       font-size: 1.15rem;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.06em;
+      font-weight: 560;
     }
 
     p {
@@ -110,14 +128,17 @@
       margin-top: auto;
       padding-top: 18px;
       color: var(--accent);
-      font-size: 0.84rem;
-      letter-spacing: 0.06em;
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
     }
 
     footer {
       margin-top: 28px;
       color: var(--muted);
-      font-size: 0.78rem;
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.06em;
     }
 
     @media (max-width: 760px) {
@@ -130,28 +151,32 @@
 <body>
   <main class="wrap">
     <header>
+      <p class="kicker">DWG-04 · REV A</p>
       <h1>学习小工具</h1>
       <p class="sub">口算、古诗、识字，在浏览器里排好，再打印。</p>
     </header>
 
     <nav class="grid" aria-label="工具">
       <a class="card" href="suan-ti.html">
+        <span class="fig">FIG. 01</span>
         <span class="mark" aria-hidden="true">算</span>
         <h2>小学生计算题</h2>
         <p>按年级出一份加减乘除口算卷，浏览器里直接打印成 A4。</p>
-        <span class="go">打开 →</span>
+        <span class="go">OPEN →</span>
       </a>
       <a class="card" href="gushi-pinyin.html">
+        <span class="fig">FIG. 02</span>
         <span class="mark" aria-hidden="true">诗</span>
         <h2>古诗拼音排版</h2>
         <p>输入古诗，自动注音排版。可调每页首数和单个注音，支持 A4 打印。</p>
-        <span class="go">打开 →</span>
+        <span class="go">OPEN →</span>
       </a>
       <a class="card" href="word-card.html">
+        <span class="fig">FIG. 03</span>
         <span class="mark" aria-hidden="true">字</span>
         <h2>中文字卡片</h2>
         <p>输入文字，按页生成大方块汉字卡片，方便裁开使用。</p>
-        <span class="go">打开 →</span>
+        <span class="go">OPEN →</span>
       </a>
     </nav>
 

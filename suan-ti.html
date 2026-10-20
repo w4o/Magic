@@ -6,13 +6,11 @@
   <title>小学生计算题</title>
   <style>
     :root {
-      color-scheme: light;
-      --bg: #f6f3ec;
-      --panel: #fffdf8;
-      --ink: #1f1a14;
-      --muted: #6b6258;
-      --line: #ddd4c5;
-      --accent: #8b4513;
+      color-scheme: dark;
+      --ink: #e7f6ff;
+      --muted: #b7d7ea;
+      --line: rgba(126, 231, 255, 0.28);
+      --accent: #7ee7ff;
       --ok: #0c7a43;
       --q-size: 18px;
       --cols: 4;
@@ -24,9 +22,11 @@
       margin: 0;
       font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
       color: var(--ink);
-      background:
-        radial-gradient(ellipse at top, #fff9ef 0%, transparent 55%),
-        linear-gradient(180deg, #f8f2e6 0%, var(--bg) 100%);
+      background-color: #0c2344;
+      background-image:
+        linear-gradient(rgba(94, 196, 255, 0.16) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(94, 196, 255, 0.16) 1px, transparent 1px);
+      background-size: 22px 22px;
       min-height: 100vh;
     }
 
@@ -41,11 +41,19 @@
     }
 
     .panel {
-      background: var(--panel);
+      background:
+        linear-gradient(#7ee7ff, #7ee7ff) left top / 14px 2px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) left top / 2px 14px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) right top / 14px 2px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) right top / 2px 14px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) left bottom / 14px 2px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) left bottom / 2px 14px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) right bottom / 14px 2px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) right bottom / 2px 14px no-repeat,
+        rgba(8, 28, 58, 0.92);
       border: 1px solid var(--line);
-      border-radius: 14px;
+      border-radius: 2px;
       padding: 16px;
-      box-shadow: 0 10px 30px rgba(80, 55, 20, 0.06);
       position: sticky;
       top: 16px;
       max-height: calc(100vh - 32px);
@@ -55,19 +63,21 @@
     .home {
       display: inline-block;
       margin-bottom: 10px;
-      color: var(--muted);
-      font-size: 0.78rem;
-      letter-spacing: 0.06em;
+      color: var(--accent);
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
       text-decoration: none;
     }
 
-    .home:hover { color: var(--accent); }
+    .home:hover { color: #fff; }
 
     h1 {
       margin: 0 0 4px;
       font-size: 1.35rem;
-      letter-spacing: 0.04em;
-      color: var(--accent);
+      letter-spacing: 0.08em;
+      font-weight: 560;
+      color: var(--ink);
     }
 
     .sub, .hint, .tip, .warn {
@@ -82,16 +92,18 @@
     .hint {
       margin-top: 8px;
       padding: 8px 10px;
-      background: #f3ebe0;
-      border-radius: 10px;
+      background: rgba(4, 16, 36, 0.45);
+      border: 1px solid rgba(126, 231, 255, 0.2);
+      border-radius: 2px;
     }
 
     .warn {
       margin-top: 10px;
       padding: 8px 10px;
-      background: #fff1e4;
-      color: #8a4b12;
-      border-radius: 10px;
+      background: rgba(80, 32, 8, 0.45);
+      color: #ffc48a;
+      border: 1px solid rgba(255, 180, 100, 0.35);
+      border-radius: 2px;
     }
 
     .warn:empty, .hint:empty { display: none; }
@@ -107,12 +119,18 @@
       width: 100%;
       font: inherit;
       font-size: 0.92rem;
-      border: 1px solid var(--line);
-      border-radius: 10px;
+      border: 1px solid rgba(126, 231, 255, 0.35);
+      border-radius: 2px;
       padding: 8px 10px;
-      background: #fff;
+      background: rgba(4, 16, 36, 0.65);
       color: var(--ink);
     }
+
+    select, input[type="number"] {
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    }
+
+    input::placeholder { color: #7fa3bb; }
 
     .row {
       display: grid;
@@ -132,6 +150,8 @@
       width: auto;
       accent-color: var(--accent);
     }
+
+    input[type="checkbox"] { accent-color: var(--accent); }
 
     .ctrl output {
       min-width: 3.2em;
@@ -153,25 +173,25 @@
       gap: 6px;
       margin: 0;
       padding: 6px 12px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: #fff;
+      border: 1px solid rgba(126, 231, 255, 0.35);
+      border-radius: 2px;
+      background: rgba(4, 16, 36, 0.45);
       cursor: pointer;
       color: var(--ink);
       font-size: 0.9rem;
     }
 
     .ops label:has(input:checked) {
-      background: #f3e6d6;
-      border-color: #c4a484;
+      background: rgba(126, 231, 255, 0.16);
+      border-color: var(--accent);
       color: var(--accent);
       font-weight: 600;
     }
 
     .ops label:has(input:disabled) {
-      color: #b3aa9f;
+      color: #6f8ea3;
       cursor: not-allowed;
-      background: #faf7f2;
+      background: rgba(4, 16, 36, 0.25);
     }
 
     .range {
@@ -218,20 +238,23 @@
     }
 
     button {
-      border: none;
-      border-radius: 999px;
+      border: 1px solid rgba(126, 231, 255, 0.45);
+      border-radius: 2px;
       padding: 9px 16px;
       cursor: pointer;
-      font: inherit;
-      font-size: 0.9rem;
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      letter-spacing: 0.06em;
+      font-size: 0.82rem;
+      background: transparent;
+      color: var(--ink);
     }
 
     button:disabled { opacity: 0.45; cursor: not-allowed; }
 
-    .btn-primary { background: var(--accent); color: #fff; flex: 1.2; }
-    .btn-secondary { background: #efe7da; color: var(--ink); flex: 1; }
-    .btn-primary:hover { filter: brightness(1.08); }
-    .btn-secondary:hover { filter: brightness(0.98); }
+    .btn-primary { background: var(--accent); color: #062033; border-color: var(--accent); flex: 1.2; }
+    .btn-secondary { background: transparent; color: var(--ink); flex: 1; }
+    .btn-primary:hover { filter: brightness(1.06); }
+    .btn-secondary:hover { border-color: var(--accent); }
 
     .tip { margin-top: 12px; }
 
@@ -277,8 +300,8 @@
       width: 210mm;
       height: 297mm;
       background: #fff;
-      border: 1px solid var(--line);
-      box-shadow: 0 12px 40px rgba(60, 40, 10, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.38);
       padding: 12mm 14mm 10mm;
       display: flex;
       flex-direction: column;
@@ -474,7 +497,7 @@
     @page { size: A4; margin: 0; }
 
     @media print {
-      body { background: #fff !important; }
+      body { background: #fff !important; color: #111; color-scheme: light; }
       .no-print { display: none !important; }
       .app { display: block; padding: 0; max-width: none; }
       .pages { gap: 0; }
