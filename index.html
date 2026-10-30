@@ -27,7 +27,7 @@
     }
 
     .wrap {
-      max-width: 960px;
+      max-width: 1180px;
       margin: 0 auto;
       padding: 56px 20px 40px;
     }
@@ -58,7 +58,7 @@
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 16px;
     }
 
@@ -141,7 +141,11 @@
       letter-spacing: 0.06em;
     }
 
-    @media (max-width: 760px) {
+    @media (max-width: 980px) {
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 640px) {
       .wrap { padding-top: 36px; }
       .grid { grid-template-columns: 1fr; }
       a.card { min-height: 0; }
@@ -153,7 +157,7 @@
     <header>
       <p class="kicker">DWG-04 · REV A</p>
       <h1>学习小工具</h1>
-      <p class="sub">口算、古诗、识字，在浏览器里排好，再打印。</p>
+      <p class="sub">口算、古诗、识字、日程，在浏览器里排好，再打印。</p>
     </header>
 
     <nav class="grid" aria-label="工具">
@@ -178,9 +182,16 @@
         <p>输入文字，按页生成大方块汉字卡片，方便裁开使用。</p>
         <span class="go">OPEN →</span>
       </a>
+      <a class="card" href="richeng.html">
+        <span class="fig">FIG. 04</span>
+        <span class="mark" aria-hidden="true">日</span>
+        <h2>今日日程</h2>
+        <p>给一天排好时间表。左侧填写，右侧看 A4，直接打印。</p>
+        <span class="go">OPEN →</span>
+      </a>
     </nav>
 
-    <footer>三个页面都在本机打开，不需要登录。</footer>
+    <footer>这些页面都在本机打开，不需要登录。</footer>
   </main>
 </body>
 </html>
