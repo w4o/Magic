@@ -27,7 +27,7 @@
     }
 
     .wrap {
-      max-width: 1180px;
+      max-width: 1280px;
       margin: 0 auto;
       padding: 56px 20px 40px;
     }
@@ -58,7 +58,7 @@
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 16px;
     }
 
@@ -141,7 +141,11 @@
       letter-spacing: 0.06em;
     }
 
-    @media (max-width: 980px) {
+    @media (max-width: 1200px) {
+      .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 800px) {
       .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
@@ -157,7 +161,7 @@
     <header>
       <p class="kicker">DWG-04 · REV A</p>
       <h1>学习小工具</h1>
-      <p class="sub">口算、古诗、识字、日程，在浏览器里排好，再打印。</p>
+      <p class="sub">口算、古诗、短文、识字、日程，在浏览器里排好，再打印。</p>
     </header>
 
     <nav class="grid" aria-label="工具">
@@ -175,15 +179,22 @@
         <p>输入古诗，自动注音排版。可调每页首数和单个注音，支持 A4 打印。</p>
         <span class="go">OPEN →</span>
       </a>
-      <a class="card" href="word-card.html">
+      <a class="card" href="duanwen.html">
         <span class="fig">FIG. 03</span>
+        <span class="mark" aria-hidden="true">文</span>
+        <h2>短文排版</h2>
+        <p>输入短文，自动注音并按段落排版。可调每页篇数和单个注音，支持 A4 打印。</p>
+        <span class="go">OPEN →</span>
+      </a>
+      <a class="card" href="word-card.html">
+        <span class="fig">FIG. 04</span>
         <span class="mark" aria-hidden="true">字</span>
         <h2>中文字卡片</h2>
         <p>输入文字，按页生成大方块汉字卡片，方便裁开使用。</p>
         <span class="go">OPEN →</span>
       </a>
       <a class="card" href="richeng.html">
-        <span class="fig">FIG. 04</span>
+        <span class="fig">FIG. 05</span>
         <span class="mark" aria-hidden="true">日</span>
         <h2>今日日程</h2>
         <p>给一天排好时间表。左侧填写，右侧看 A4，直接打印。</p>

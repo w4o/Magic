@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>短文排版 · A4 打印</title>
+  <script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.26.0/dist/index.js"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #e7f6ff;
+      --muted: #b7d7ea;
+      --line: rgba(126, 231, 255, 0.28);
+      --accent: #7ee7ff;
+      --grid: #c9c0b0;
+      --han-size: 26px;
+      --py-size: 12px;
+      --title-size: 34px;
+      --line-gap: 1.25;
+      --char-gap: 0.08em;
+      --page-margin: 16mm;
+      --essay-gap: 8mm;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background-color: #0c2344;
+      background-image:
+        linear-gradient(rgba(94, 196, 255, 0.16) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(94, 196, 255, 0.16) 1px, transparent 1px);
+      background-size: 22px 22px;
+      min-height: 100vh;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: minmax(300px, 380px) 1fr;
+      gap: 20px;
+      padding: 20px;
+      max-width: 1480px;
+      margin: 0 auto;
+    }
+
+    .panel {
+      background:
+        linear-gradient(#7ee7ff, #7ee7ff) left top / 14px 2px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) left top / 2px 14px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) right top / 14px 2px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) right top / 2px 14px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) left bottom / 14px 2px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) left bottom / 2px 14px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) right bottom / 14px 2px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) right bottom / 2px 14px no-repeat,
+        rgba(8, 28, 58, 0.92);
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      padding: 16px;
+      height: fit-content;
+      position: sticky;
+      top: 16px;
+      max-height: calc(100vh - 32px);
+      overflow: auto;
+    }
+
+    .home {
+      display: inline-block;
+      margin-bottom: 10px;
+      color: var(--accent);
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-decoration: none;
+    }
+
+    .home:hover { color: #fff; }
+
+    h1 {
+      margin: 0 0 4px;
+      font-size: 1.35rem;
+      letter-spacing: 0.08em;
+      font-weight: 560;
+      color: var(--ink);
+    }
+
+    .sub {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.5;
+    }
+
+    label {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin: 10px 0 6px;
+    }
+
+    textarea, select, input[type="range"] {
+      width: 100%;
+      font: inherit;
+    }
+
+    textarea, select {
+      border: 1px solid rgba(126, 231, 255, 0.35);
+      border-radius: 2px;
+      padding: 8px 10px;
+      background: rgba(4, 16, 36, 0.65);
+      color: var(--ink);
+    }
+
+    select {
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    }
+
+    textarea {
+      min-height: 200px;
+      resize: vertical;
+      padding: 10px 12px;
+      line-height: 1.6;
+      font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+
+    textarea::placeholder { color: #7fa3bb; }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .ctrl {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ctrl input[type="range"] { accent-color: var(--accent); }
+
+    .ctrl output {
+      min-width: 3.6em;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      color: var(--ink);
+      font-size: 0.85rem;
+    }
+
+    label.checkline {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      color: var(--ink);
+    }
+
+    label.checkline input { width: auto; accent-color: var(--accent); }
+
+    .btns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    button {
+      border: 1px solid rgba(126, 231, 255, 0.45);
+      border-radius: 2px;
+      padding: 9px 16px;
+      cursor: pointer;
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      letter-spacing: 0.06em;
+      font-size: 0.82rem;
+      background: transparent;
+      color: var(--ink);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #062033;
+    }
+
+    .btn-secondary { background: transparent; color: var(--ink); }
+    .btn-secondary:hover { border-color: var(--accent); }
+    .btn-primary:hover { filter: brightness(1.06); }
+
+    .hint {
+      margin-top: 12px;
+      padding: 10px 12px;
+      background: rgba(4, 16, 36, 0.45);
+      border: 1px solid rgba(126, 231, 255, 0.2);
+      border-radius: 2px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.55;
+    }
+
+    .preview-wrap { min-width: 0; }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar .meta {
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .pages {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .page {
+      width: 210mm;
+      height: 297mm;
+      background: #fff;
+      color: #1a1a1a;
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.38);
+      padding: var(--page-margin);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      page-break-after: always;
+      break-after: page;
+    }
+
+    .page.landscape {
+      width: 297mm;
+      height: 210mm;
+    }
+
+    .page.overflow::after {
+      content: "超出本页";
+      position: absolute;
+      z-index: 2;
+      top: 2.5mm;
+      right: 4mm;
+      padding: 0.6mm 1.8mm;
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: #9c341f;
+      background: rgba(255, 236, 230, 0.94);
+    }
+
+    .page-inner {
+      flex: 1 1 auto;
+      min-height: 0;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      overflow: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .page-inner::-webkit-scrollbar { width: 0; height: 0; display: none; }
+    .page-inner.center { justify-content: center; }
+
+    .page-content {
+      display: flex;
+      flex-direction: column;
+      gap: var(--essay-gap, 8mm);
+      width: 100%;
+      min-width: 0;
+    }
+
+    .page-content.layout-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-content: start;
+      gap: var(--essay-gap, 8mm);
+    }
+
+    .essay {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: calc(var(--han-size) * 0.62);
+      min-width: 0;
+      width: 100%;
+    }
+
+    .essay-head {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.28em;
+    }
+
+    .essay-title {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: flex-end;
+      column-gap: var(--char-gap);
+      row-gap: 0.12em;
+      max-width: 100%;
+      margin: 0;
+      font-family: "Kaiti SC", "STKaiti", "KaiTi", "Songti SC", serif;
+      font-weight: 700;
+      font-size: var(--title-size);
+      line-height: 1.25;
+    }
+
+    .essay-title .han {
+      font-size: var(--title-size);
+      width: 1.05em;
+      height: 1.05em;
+    }
+
+    .essay-title .char { min-width: calc(var(--title-size) * 1.02); }
+    .essay-title .char.punct { min-width: calc(var(--title-size) * 0.42); }
+
+    .essay-title .pinyin {
+      font-size: calc(var(--title-size) * 0.32);
+      height: calc(var(--title-size) * 0.38);
+    }
+
+    .mode-han-only .essay-title {
+      display: block;
+      text-align: center;
+      letter-spacing: 0.14em;
+    }
+
+    .essay-author {
+      font-family: "Kaiti SC", "STKaiti", "KaiTi", "Songti SC", serif;
+      font-size: calc(var(--han-size) * 0.68);
+      color: #444;
+      letter-spacing: 0.1em;
+      text-align: center;
+    }
+
+    .essay-body {
+      display: flex;
+      flex-direction: column;
+      gap: calc(var(--han-size) * var(--line-gap) * 0.28);
+      width: 100%;
+      min-width: 0;
+    }
+
+    .para {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      column-gap: var(--char-gap);
+      row-gap: calc(var(--han-size) * (var(--line-gap) - 1) * 0.72);
+      margin: 0;
+      width: 100%;
+      min-width: 0;
+    }
+
+    .indent-spacer {
+      flex: 0 0 calc(var(--han-size) * 1.15 * 2 + var(--char-gap));
+      width: calc(var(--han-size) * 1.15 * 2 + var(--char-gap));
+      height: 1px;
+    }
+
+    .mode-han-only .indent-spacer {
+      flex-basis: calc(var(--han-size) * 1.05 * 2 + var(--char-gap));
+      width: calc(var(--han-size) * 1.05 * 2 + var(--char-gap));
+    }
+
+    .glue {
+      display: inline-flex;
+      flex: 0 0 auto;
+      align-items: flex-end;
+      column-gap: var(--char-gap);
+      max-width: 100%;
+    }
+
+    .char {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      vertical-align: bottom;
+      min-width: calc(var(--han-size) * 1.15);
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    .char.punct { min-width: calc(var(--han-size) * 0.55); }
+    .char.latin { min-width: auto; }
+
+    .pinyin {
+      display: block;
+      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      font-size: var(--py-size);
+      line-height: 1.15;
+      color: #555;
+      white-space: nowrap;
+      letter-spacing: -0.02em;
+      max-width: 100%;
+      transform-origin: center bottom;
+      margin-bottom: 0.12em;
+      height: calc(var(--py-size) * 1.2);
+    }
+
+    .pinyin.editable { border-radius: 3px; cursor: pointer; }
+    .pinyin.editable:hover {
+      color: #0b6a84;
+      background: rgba(11, 106, 132, 0.08);
+    }
+    .pinyin.manual {
+      color: #0b6a84;
+      box-shadow: inset 0 -1px 0 #0b6a84;
+    }
+    .pinyin.editing {
+      outline: 1px solid #0b6a84;
+      background: #f4fbfe;
+      cursor: text;
+      transform: none !important;
+      min-width: 2.5em;
+      padding: 0 2px;
+    }
+
+    .py-editor {
+      position: fixed;
+      z-index: 9999;
+      background:
+        linear-gradient(#7ee7ff, #7ee7ff) left top / 12px 2px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) left top / 2px 12px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) right top / 12px 2px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) right top / 2px 12px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) left bottom / 12px 2px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) left bottom / 2px 12px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) right bottom / 12px 2px no-repeat,
+        linear-gradient(#7ee7ff, #7ee7ff) right bottom / 2px 12px no-repeat,
+        #0c2748;
+      border: 1px solid rgba(126, 231, 255, 0.4);
+      border-radius: 2px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+      padding: 12px;
+      width: 260px;
+      display: none;
+      color: var(--ink);
+    }
+    .py-editor.show { display: block; }
+    .py-editor .hd {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .py-editor .hd b { color: var(--ink); font-size: 1.1rem; margin: 0 4px; }
+    .py-editor input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid rgba(126, 231, 255, 0.35);
+      border-radius: 2px;
+      font-size: 1rem;
+      margin-bottom: 8px;
+      background: rgba(4, 16, 36, 0.65);
+      color: var(--ink);
+    }
+    .py-editor .alts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+      min-height: 1.5em;
+    }
+    .py-editor .alts button {
+      padding: 4px 10px;
+      border-radius: 2px;
+      background: transparent;
+      font-size: 0.85rem;
+    }
+    .py-editor .alts button.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #062033;
+    }
+    .py-editor .actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .py-editor .actions button {
+      padding: 6px 12px;
+      border-radius: 2px;
+      font-size: 0.85rem;
+    }
+
+    .han {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.15em;
+      height: 1.15em;
+      font-size: var(--han-size);
+      line-height: 1;
+      font-family: "Kaiti SC", "STKaiti", "KaiTi", "Songti SC", serif;
+    }
+
+    .char.latin .han {
+      width: auto;
+      height: 1.15em;
+      padding: 0 0.06em;
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: calc(var(--han-size) * 0.72);
+    }
+
+    .mode-han-only .pinyin { display: none; }
+    .mode-han-only .char { min-width: calc(var(--han-size) * 1.05); }
+    .mode-han-only .char.punct { min-width: calc(var(--han-size) * 0.48); }
+
+    .mode-grid .han {
+      border: 1px solid var(--grid);
+      background:
+        linear-gradient(to right, transparent 49.5%, rgba(180, 170, 150, 0.45) 49.5%, rgba(180, 170, 150, 0.45) 50.5%, transparent 50.5%),
+        linear-gradient(to bottom, transparent 49.5%, rgba(180, 170, 150, 0.45) 49.5%, rgba(180, 170, 150, 0.45) 50.5%, transparent 50.5%);
+    }
+
+    .mode-grid .char.punct .han,
+    .mode-grid .char.latin .han,
+    .mode-grid .essay-title .char.punct .han {
+      border: none;
+      background: none;
+      width: auto;
+      height: auto;
+    }
+
+    .empty {
+      color: var(--muted);
+      padding: 60px 20px;
+      text-align: center;
+      background: rgba(8, 28, 58, 0.72);
+      border: 1px dashed rgba(126, 231, 255, 0.45);
+      border-radius: 2px;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 980px) {
+      .app { grid-template-columns: 1fr; }
+      .panel { position: static; max-height: none; }
+      .page, .page.landscape {
+        width: 100%;
+        height: auto;
+        min-height: 0;
+        overflow: visible;
+      }
+      .page-inner { overflow: visible; }
+    }
+
+    @page { size: A4 portrait; margin: 0; }
+    @page landscape { size: A4 landscape; margin: 0; }
+
+    @media print {
+      body {
+        background: #fff !important;
+        color: #111;
+        color-scheme: light;
+      }
+      .no-print { display: none !important; }
+      .page.overflow::after { content: none; }
+      .app { display: block; padding: 0; max-width: none; }
+      .preview-wrap { margin: 0; }
+      .pages { gap: 0; }
+      .page {
+        width: 210mm;
+        height: 297mm;
+        border: none;
+        box-shadow: none;
+        margin: 0;
+        overflow: hidden;
+        page-break-after: always;
+        break-after: page;
+      }
+      .page.landscape {
+        width: 297mm;
+        height: 210mm;
+        page: landscape;
+      }
+      .page:last-child {
+        page-break-after: auto;
+        break-after: auto;
+      }
+      .page-inner { overflow: hidden; }
+      .char, .essay-title, .essay-author {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+      .han, .mode-grid .han {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="panel no-print">
+      <a class="home" href="index.html">全部工具</a>
+      <h1>短文排版</h1>
+      <p class="sub">输入短文，自动注音并按段落排版，支持 A4 打印。可调每页篇数、缩进和单个注音。</p>
+
+      <label for="input">短文输入（多篇用空行分隔）</label>
+      <textarea id="input" placeholder="小鸭子学游泳
+
+鸭妈妈带着小鸭子来到河边。
+小鸭子还有一点害怕，后来慢慢地学会了。
+
+雨后的校园
+作者 · 佚名
+
+雨停了，花和草都洗得干干净净。"></textarea>
+
+      <label for="mode">排版模式</label>
+      <select id="mode">
+        <option value="pinyin">拼音 + 汉字</option>
+        <option value="han">纯汉字</option>
+        <option value="grid">拼音 + 汉字 + 田字格</option>
+        <option value="kids">超大字号（低年级）</option>
+      </select>
+
+      <div class="row">
+        <div>
+          <label for="orient">纸张方向</label>
+          <select id="orient">
+            <option value="portrait">A4 纵向</option>
+            <option value="landscape">A4 横向</option>
+          </select>
+        </div>
+        <div>
+          <label for="fit">页面适应</label>
+          <select id="fit">
+            <option value="auto">自动适应</option>
+            <option value="fixed">固定字号</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="essaysPerPage">每页几篇</label>
+          <select id="essaysPerPage">
+            <option value="1" selected>1 篇</option>
+            <option value="2">2 篇</option>
+            <option value="3">3 篇</option>
+            <option value="4">4 篇</option>
+          </select>
+        </div>
+        <div>
+          <label for="multiLayout">多篇布局</label>
+          <select id="multiLayout">
+            <option value="stack">纵向排列</option>
+            <option value="grid2">双栏</option>
+          </select>
+        </div>
+      </div>
+
+      <label class="checkline"><input type="checkbox" id="indent" checked /> 段落首行缩进两字</label>
+
+      <label>篇间距 <span class="ctrl"><input id="essayGap" type="range" min="4" max="24" value="8" /><output id="essayGapOut">8mm</output></span></label>
+      <label>汉字大小 <span class="ctrl"><input id="hanSize" type="range" min="16" max="72" value="26" /><output id="hanSizeOut">26px</output></span></label>
+      <label>拼音大小 <span class="ctrl"><input id="pySize" type="range" min="8" max="28" value="12" /><output id="pySizeOut">12px</output></span></label>
+      <label>标题大小 <span class="ctrl"><input id="titleSize" type="range" min="20" max="80" value="34" /><output id="titleSizeOut">34px</output></span></label>
+      <label>行距 <span class="ctrl"><input id="lineGap" type="range" min="100" max="220" value="125" /><output id="lineGapOut">1.25</output></span></label>
+      <label>字间距 <span class="ctrl"><input id="charGap" type="range" min="0" max="60" value="8" /><output id="charGapOut">0.08em</output></span></label>
+      <label>页边距 <span class="ctrl"><input id="margin" type="range" min="8" max="28" value="16" /><output id="marginOut">16mm</output></span></label>
+
+      <div class="btns">
+        <button class="btn-primary" id="btnRender" type="button">生成排版</button>
+        <button class="btn-secondary" id="btnPrint" type="button">打印 / 导出 PDF</button>
+        <button class="btn-secondary" id="btnSample" type="button">填入示例</button>
+        <button class="btn-secondary" id="btnClearPy" type="button">清除注音修改</button>
+      </div>
+
+      <div class="hint">
+        格式：第一行标题。下一行如果以「作者」「选自」「出处」开头，或带间隔号 ·，会当成署名。<br />
+        同一篇里每段一行，段与段之间不要空行。标题和正文之间可以空一行。多篇之间空一行。<br />
+        单击拼音：多音轮换；双击拼音：手动输入。修改会保留到下次重新生成。<br />
+        打印时边距选「无」，并关掉页眉页脚。纸张方向与左侧选择一致。
+      </div>
+    </aside>
+
+    <main class="preview-wrap">
+      <div class="toolbar no-print">
+        <div class="meta" id="meta">尚未生成</div>
+        <div class="btns" style="margin:0">
+          <button class="btn-secondary" id="btnPrint2" type="button">打印</button>
+        </div>
+      </div>
+      <div class="pages" id="pages">
+        <div class="empty">在左侧输入短文后点击「生成排版」</div>
+      </div>
+    </main>
+  </div>
+
+  <div class="py-editor no-print" id="pyEditor" role="dialog" aria-label="修改注音">
+    <div class="hd">修改「<b id="pyEditChar"></b>」的注音</div>
+    <input id="pyEditInput" type="text" autocomplete="off" spellcheck="false" placeholder="如 hái / hai2" />
+    <div class="alts" id="pyEditAlts"></div>
+    <div class="actions">
+      <button type="button" class="btn-secondary" id="pyEditCancel">取消</button>
+      <button type="button" class="btn-primary" id="pyEditOk">确定</button>
+    </div>
+  </div>
+
+  <script>
+    const { pinyin } = window.pinyinPro || {};
+    if (typeof pinyin !== "function") {
+      console.warn("pinyin-pro 未加载，将仅显示汉字");
+    }
+
+    /**
+     * 短语优先，越长越优先。只锁小学生短文里较固定的读音，
+     * 其余交给整句分词。
+     */
+    const PHRASE_MAP = [
+      ["安安静静地", ["ān", "ān", "jìng", "jìng", "de"]],
+      ["干干净净", ["gān", "gān", "jìng", "jìng"]],
+      ["为什么", ["wèi", "shén", "me"]],
+      ["一会儿", ["yí", "huì", "er"]],
+      ["快乐地", ["kuài", "lè", "de"]],
+      ["高兴地", ["gāo", "xìng", "de"]],
+      ["开心地", ["kāi", "xīn", "de"]],
+      ["悄悄地", ["qiāo", "qiāo", "de"]],
+      ["慢慢地", ["màn", "màn", "de"]],
+      ["轻轻地", ["qīng", "qīng", "de"]],
+      ["飞快地", ["fēi", "kuài", "de"]],
+      ["安静地", ["ān", "jìng", "de"]],
+      ["认真地", ["rèn", "zhēn", "de"]],
+      ["什么", ["shén", "me"]],
+      ["怎么", ["zěn", "me"]],
+      ["这么", ["zhè", "me"]],
+      ["那么", ["nà", "me"]],
+      ["一下", ["yí", "xià"]],
+      ["一起", ["yì", "qǐ"]],
+      ["一样", ["yí", "yàng"]],
+      ["长大", ["zhǎng", "dà"]],
+      ["长出", ["zhǎng", "chū"]],
+      ["长高", ["zhǎng", "gāo"]],
+      ["长长", ["cháng", "cháng"]],
+      ["成长", ["chéng", "zhǎng"]],
+      ["长得", ["zhǎng", "de"]],
+      ["还是", ["hái", "shì"]],
+      ["还有", ["hái", "yǒu"]],
+      ["还要", ["hái", "yào"]],
+      ["还会", ["hái", "huì"]],
+      ["还不", ["hái", "bù"]],
+      ["还没", ["hái", "méi"]],
+      ["还想", ["hái", "xiǎng"]],
+      ["音乐", ["yīn", "yuè"]],
+      ["快乐", ["kuài", "lè"]],
+      ["欢乐", ["huān", "lè"]],
+      ["高兴", ["gāo", "xìng"]],
+      ["种子", ["zhǒng", "zi"]],
+      ["种花", ["zhòng", "huā"]],
+      ["种树", ["zhòng", "shù"]],
+      ["睡觉", ["shuì", "jiào"]],
+      ["觉得", ["jué", "de"]],
+      ["因为", ["yīn", "wèi"]],
+      ["为了", ["wèi", "le"]],
+      ["没有", ["méi", "yǒu"]],
+      ["银行", ["yín", "háng"]],
+      ["行走", ["xíng", "zǒu"]],
+      ["行人", ["xíng", "rén"]],
+      ["行动", ["xíng", "dòng"]],
+      ["行为", ["xíng", "wéi"]],
+      ["教室", ["jiào", "shì"]],
+      ["重新", ["chóng", "xīn"]],
+      ["重要", ["zhòng", "yào"]],
+      ["干净", ["gān", "jìng"]],
+      ["干活", ["gàn", "huó"]],
+      ["好好", ["hǎo", "hǎo"]],
+      ["好像", ["hǎo", "xiàng"]],
+      ["好看", ["hǎo", "kàn"]],
+      ["好多", ["hǎo", "duō"]],
+      ["好吃", ["hǎo", "chī"]],
+      ["好听", ["hǎo", "tīng"]],
+      ["好玩", ["hǎo", "wán"]],
+      ["喜欢", ["xǐ", "huan"]],
+      ["地方", ["dì", "fang"]],
+      ["地上", ["dì", "shàng"]],
+      ["地下", ["dì", "xià"]],
+      ["地里", ["dì", "lǐ"]],
+      ["知道", ["zhī", "dào"]],
+      ["认识", ["rèn", "shi"]],
+      ["意思", ["yì", "si"]],
+      ["朋友", ["péng", "you"]],
+      ["衣服", ["yī", "fu"]],
+      ["星星", ["xīng", "xing"]],
+      ["日子", ["rì", "zi"]],
+      ["叶子", ["yè", "zi"]],
+      ["晚上", ["wǎn", "shang"]],
+      ["早上", ["zǎo", "shang"]],
+      ["爸爸", ["bà", "ba"]],
+      ["妈妈", ["mā", "ma"]],
+      ["哥哥", ["gē", "ge"]],
+      ["弟弟", ["dì", "di"]],
+      ["姐姐", ["jiě", "jie"]],
+      ["妹妹", ["mèi", "mei"]],
+      ["孩子", ["hái", "zi"]],
+      ["石头", ["shí", "tou"]],
+      ["木头", ["mù", "tou"]],
+      ["带着", ["dài", "zhe"]],
+      ["看着", ["kàn", "zhe"]],
+      ["闪着", ["shǎn", "zhe"]],
+      ["吹着", ["chuī", "zhe"]],
+      ["照着", ["zhào", "zhe"]],
+      ["叫着", ["jiào", "zhe"]],
+      ["洗得", ["xǐ", "de"]],
+      ["跑得", ["pǎo", "de"]],
+      ["飞得", ["fēi", "de"]],
+      ["变得", ["biàn", "de"]],
+      ["看得", ["kàn", "de"]],
+      ["听得", ["tīng", "de"]],
+      ["写得", ["xiě", "de"]],
+      ["读得", ["dú", "de"]],
+      ["玩得", ["wán", "de"]],
+      ["跳得", ["tiào", "de"]],
+      ["游得", ["yóu", "de"]],
+      ["说得", ["shuō", "de"]],
+      ["得到", ["dé", "dào"]],
+      ["归还", ["guī", "huán"]],
+      ["了解", ["liǎo", "jiě"]],
+    ];
+
+    PHRASE_MAP.forEach(function (row) {
+      if (Array.from(row[0]).length !== row[1].length) {
+        console.warn("短语读音数量不一致", row[0]);
+      }
+    });
+
+    const CONTEXT_RULES = [
+      { re: /还(是|有|要|会|不|没|能|在|想)/g, pyAt: { 0: "hái" } },
+      { re: /银行/g, pyAt: { 0: "yín", 1: "háng" } },
+    ];
+
+    const POLY_ALTS = {
+      "更": ["gēng", "gèng"],
+      "行": ["xíng", "háng", "hàng", "héng"],
+      "长": ["cháng", "zhǎng"],
+      "还": ["hái", "huán"],
+      "朝": ["zhāo", "cháo"],
+      "乐": ["lè", "yuè"],
+      "为": ["wéi", "wèi"],
+      "着": ["zhe", "zháo", "zhuó"],
+      "少": ["shǎo", "shào"],
+      "重": ["zhòng", "chóng"],
+      "觉": ["jué", "jiào"],
+      "将": ["jiāng", "jiàng"],
+      "应": ["yīng", "yìng"],
+      "教": ["jiāo", "jiào"],
+      "看": ["kàn", "kān"],
+      "没": ["méi", "mò"],
+      "与": ["yǔ", "yù"],
+      "处": ["chù", "chǔ"],
+      "间": ["jiān", "jiàn"],
+      "得": ["de", "dé", "děi"],
+      "的": ["de", "dí", "dì"],
+      "地": ["de", "dì"],
+      "了": ["le", "liǎo"],
+      "都": ["dōu", "dū"],
+      "和": ["hé", "hè", "huó", "huò"],
+      "曲": ["qū", "qǔ"],
+      "塞": ["sāi", "sài", "sè"],
+      "兴": ["xīng", "xìng"],
+      "降": ["jiàng", "xiáng"],
+      "强": ["qiáng", "qiǎng", "jiàng"],
+      "省": ["shěng", "xǐng"],
+      "差": ["chà", "chā", "chāi"],
+      "种": ["zhǒng", "zhòng"],
+      "便": ["biàn", "pián"],
+      "盛": ["shèng", "chéng"],
+      "弹": ["tán", "dàn"],
+      "传": ["chuán", "zhuàn"],
+      "华": ["huá", "huà"],
+      "号": ["hào", "háo"],
+      "曾": ["céng", "zēng"],
+      "干": ["gàn", "gān"],
+      "恶": ["è", "wù"],
+      "薄": ["báo", "bó"],
+      "藏": ["cáng", "zàng"],
+      "解": ["jiě", "xiè"],
+      "谁": ["shuí", "shéi"],
+      "过": ["guò", "guo"],
+      "那": ["nà", "nèi", "nǎ"],
+      "难": ["nán", "nàn"],
+      "度": ["dù", "duó"],
+      "一": ["yī", "yí", "yì"],
+      "不": ["bù", "bú"],
+      "好": ["hǎo", "hào"],
+      "发": ["fā", "fà"],
+      "只": ["zhī", "zhǐ"],
+      "中": ["zhōng", "zhòng"],
+      "背": ["bēi", "bèi"],
+      "倒": ["dǎo", "dào"],
+      "空": ["kōng", "kòng"],
+      "正": ["zhèng", "zhēng"],
+      "相": ["xiāng", "xiàng"],
+      "给": ["gěi", "jǐ"],
+      "结": ["jiē", "jié"],
+      "角": ["jiǎo", "jué"],
+      "露": ["lù", "lòu"],
+      "要": ["yào", "yāo"],
+      "片": ["piàn", "piān"],
+      "调": ["tiáo", "diào", "diǎo"],
+      "转": ["zhuǎn", "zhuàn"],
+      "假": ["jiǎ", "jià"],
+      "几": ["jǐ", "jī"],
+      "切": ["qiē", "qiè"],
+      "色": ["sè", "shǎi"],
+      "数": ["shù", "shǔ", "shuò"],
+      "血": ["xuè", "xiě"],
+      "晕": ["yūn", "yùn"],
+      "载": ["zài", "zǎi"],
+      "涨": ["zhǎng", "zhàng"],
+    };
+
+    const OPEN_PUNCT = new Set(["“", "‘", "（", "(", "【", "[", "《", "〈", "「", "『"]);
+    const CLOSE_PUNCT = new Set([
+      "”", "’", "）", ")", "】", "]", "》", "〉", "」", "』",
+      "，", "。", "！", "？", "；", "：", "、", "…", "—", "～",
+      ".", "!", "?", ";", ":", ",",
+    ]);
+    const PUNCT_CHARS = new Set([
+      "，", "。", "！", "？", "；", "：", "、", "．", ".", "!", "?", ";", ":", ",",
+      "\"", "“", "”", "'", "‘", "’",
+      "（", "）", "(", ")", "【", "】", "[", "]", "《", "》", "〈", "〉", "「", "」", "『", "』",
+      "—", "…", "～", "·", " ", "\t",
+    ]);
+    const isPunct = (ch) => PUNCT_CHARS.has(ch);
+    const HAN_RE = /[\u4e00-\u9fff]/;
+
+    const SAMPLE = `小鸭子学游泳
+
+鸭妈妈带着小鸭子来到河边。河水清清的，闪着光。
+小鸭子看看水，又看看妈妈，还有一点害怕。
+鸭妈妈先游了出去，回头叫它。小鸭子把脚伸进水里，慢慢地划。
+不一会儿，小鸭子就会游了。它高兴地叫起来。
+
+雨后的校园
+作者 · 佚名
+
+雨停了，校园里的花和草都洗得干干净净。
+我们在操场上跑步，风轻轻地吹着柳枝。
+教室的窗户打开了，阳光照到新长出的叶子上。
+同学们一起看了好一会儿，都觉得空气真好。`;
+
+    const pyOverrides = new Map();
+
+    const els = {
+      input: document.getElementById("input"),
+      mode: document.getElementById("mode"),
+      orient: document.getElementById("orient"),
+      fit: document.getElementById("fit"),
+      essaysPerPage: document.getElementById("essaysPerPage"),
+      multiLayout: document.getElementById("multiLayout"),
+      indent: document.getElementById("indent"),
+      essayGap: document.getElementById("essayGap"),
+      essayGapOut: document.getElementById("essayGapOut"),
+      hanSize: document.getElementById("hanSize"),
+      pySize: document.getElementById("pySize"),
+      titleSize: document.getElementById("titleSize"),
+      lineGap: document.getElementById("lineGap"),
+      charGap: document.getElementById("charGap"),
+      margin: document.getElementById("margin"),
+      hanSizeOut: document.getElementById("hanSizeOut"),
+      pySizeOut: document.getElementById("pySizeOut"),
+      titleSizeOut: document.getElementById("titleSizeOut"),
+      lineGapOut: document.getElementById("lineGapOut"),
+      charGapOut: document.getElementById("charGapOut"),
+      marginOut: document.getElementById("marginOut"),
+      pages: document.getElementById("pages"),
+      meta: document.getElementById("meta"),
+      btnRender: document.getElementById("btnRender"),
+      btnPrint: document.getElementById("btnPrint"),
+      btnPrint2: document.getElementById("btnPrint2"),
+      btnSample: document.getElementById("btnSample"),
+      btnClearPy: document.getElementById("btnClearPy"),
+      pyEditor: document.getElementById("pyEditor"),
+      pyEditChar: document.getElementById("pyEditChar"),
+      pyEditInput: document.getElementById("pyEditInput"),
+      pyEditAlts: document.getElementById("pyEditAlts"),
+      pyEditOk: document.getElementById("pyEditOk"),
+      pyEditCancel: document.getElementById("pyEditCancel"),
+    };
+
+    let pyEditTarget = null;
+    let metaBase = "尚未生成";
+
+    function bindRange(input, output, fmt) {
+      const sync = () => { output.textContent = fmt(input.value); };
+      input.addEventListener("input", () => { sync(); applyStyles(); maybeAutoFit(); });
+      sync();
+    }
+
+    bindRange(els.hanSize, els.hanSizeOut, (v) => v + "px");
+    bindRange(els.pySize, els.pySizeOut, (v) => v + "px");
+    bindRange(els.titleSize, els.titleSizeOut, (v) => v + "px");
+    bindRange(els.lineGap, els.lineGapOut, (v) => (v / 100).toFixed(2));
+    bindRange(els.charGap, els.charGapOut, (v) => (v / 100).toFixed(2) + "em");
+    bindRange(els.margin, els.marginOut, (v) => v + "mm");
+    bindRange(els.essayGap, els.essayGapOut, (v) => v + "mm");
+
+    function applyStyles() {
+      const root = document.documentElement;
+      const kids = els.mode.value === "kids";
+      root.style.setProperty("--han-size", (kids ? Math.max(+els.hanSize.value, 40) : +els.hanSize.value) + "px");
+      root.style.setProperty("--py-size", (kids ? Math.max(+els.pySize.value, 14) : +els.pySize.value) + "px");
+      root.style.setProperty("--title-size", (kids ? Math.max(+els.titleSize.value, 46) : +els.titleSize.value) + "px");
+      root.style.setProperty("--line-gap", (+els.lineGap.value / 100).toFixed(2));
+      root.style.setProperty("--char-gap", (+els.charGap.value / 100).toFixed(2) + "em");
+      root.style.setProperty("--page-margin", els.margin.value + "mm");
+      root.style.setProperty("--essay-gap", els.essayGap.value + "mm");
+    }
+
+    function pyKey(essayIdx, section, lineIdx, charIdx) {
+      return essayIdx + "|" + section + "|" + lineIdx + "|" + charIdx;
+    }
+
+    function normalizePinyinInput(raw) {
+      let s = String(raw || "").trim().toLowerCase().replace(/\s+/g, "");
+      if (!s) return "";
+      const toneMap = {
+        a: ["ā", "á", "ǎ", "à", "a"],
+        o: ["ō", "ó", "ǒ", "ò", "o"],
+        e: ["ē", "é", "ě", "è", "e"],
+        i: ["ī", "í", "ǐ", "ì", "i"],
+        u: ["ū", "ú", "ǔ", "ù", "u"],
+        ü: ["ǖ", "ǘ", "ǚ", "ǜ", "ü"],
+        v: ["ǖ", "ǘ", "ǚ", "ǜ", "ü"],
+      };
+      const m = s.match(/^([a-züv]+)([1-5])$/i);
+      if (!m) return String(raw || "").trim();
+      let body = m[1].replace(/v/g, "ü");
+      const tone = Number(m[2]);
+      const idx = tone === 5 ? 4 : tone - 1;
+      if (body.includes("iu")) return body.replace("u", toneMap.u[idx]);
+      if (body.includes("ui")) return body.replace("i", toneMap.i[idx]);
+      const order = ["a", "o", "e", "i", "u", "ü"];
+      for (const v of order) {
+        if (body.includes(v)) {
+          body = body.replace(v, toneMap[v][idx]);
+          break;
+        }
+      }
+      return body;
+    }
+
+    function isByline(line) {
+      if (!line || line.length > 22) return false;
+      if (/[。！？；]/.test(line)) return false;
+      if (/^(作者|选自|出处)(?:\s|[:：·•]|$)/.test(line)) return true;
+      if (/[·•]/.test(line) && line.length <= 18 && !/[，、]/.test(line)) return true;
+      return false;
+    }
+
+    function isTitleLine(line) {
+      return !!line && line.length <= 36 && !/[。！？]/.test(line) && !isByline(line);
+    }
+
+    function linesOf(block) {
+      return block.split("\n").map((l) => l.trim()).filter(Boolean);
+    }
+
+    function essayFromLines(lines) {
+      const title = lines[0] || "";
+      let author = "";
+      let start = 1;
+      if (lines.length >= 2 && isByline(lines[1])) {
+        author = lines[1];
+        start = 2;
+      }
+      return { title, author, paragraphs: lines.slice(start) };
+    }
+
+    /** 空行分段。单独的标题行会和后面的正文合成一篇，所以标题下可以空一行。 */
+    function parseEssays(text) {
+      const blocks = text.replace(/\r\n/g, "\n").trim().split(/\n\s*\n+/).filter(Boolean).map(linesOf).filter((lines) => lines.length);
+      const essays = [];
+      let current = null;
+
+      function close() {
+        if (current && current.title) essays.push(current);
+        current = null;
+      }
+
+      function startsNewEssay(lines) {
+        if (!current || !current.paragraphs.length) return false;
+        if (!isTitleLine(lines[0])) return false;
+        if (lines.length === 1) return true;
+        if (isByline(lines[1])) return true;
+        return lines.slice(1).some((l) => /[。！？]/.test(l));
+      }
+
+      for (const lines of blocks) {
+        const loneTitle = lines.length === 1 && isTitleLine(lines[0]);
+        const titleAndByline = lines.length === 2 && isTitleLine(lines[0]) && isByline(lines[1]);
+        if (lines.length === 1 && isByline(lines[0]) && current && !current.author && !current.paragraphs.length) {
+          current.author = lines[0];
+          continue;
+        }
+        if (loneTitle || titleAndByline || startsNewEssay(lines)) {
+          close();
+          current = loneTitle || titleAndByline
+            ? { title: lines[0], author: titleAndByline ? lines[1] : "", paragraphs: [] }
+            : essayFromLines(lines);
+          continue;
+        }
+        if (!current) {
+          current = essayFromLines(lines);
+          continue;
+        }
+        let start = 0;
+        if (!current.author && !current.paragraphs.length && isByline(lines[0])) {
+          current.author = lines[0];
+          start = 1;
+        }
+        current.paragraphs.push(...lines.slice(start));
+      }
+      close();
+      return essays;
+    }
+
+    function applyPhraseMap(line, chars, pys, locked) {
+      const sorted = [...PHRASE_MAP].sort((a, b) => Array.from(b[0]).length - Array.from(a[0]).length);
+      for (const [phrase, readings] of sorted) {
+        let from = 0;
+        while (from < chars.length) {
+          const idx = line.indexOf(phrase, from);
+          if (idx < 0) break;
+          let ok = true;
+          for (let i = 0; i < phrase.length; i++) {
+            if (locked[idx + i]) { ok = false; break; }
+          }
+          if (ok && idx + phrase.length <= chars.length) {
+            for (let i = 0; i < phrase.length; i++) {
+              pys[idx + i] = readings[i] || "";
+              locked[idx + i] = true;
+            }
+          }
+          from = idx + 1;
+        }
+      }
+    }
+
+    function applyContextRules(line, chars, pys, locked) {
+      for (const rule of CONTEXT_RULES) {
+        const re = new RegExp(rule.re.source, rule.re.flags.includes("g") ? rule.re.flags : rule.re.flags + "g");
+        let m;
+        while ((m = re.exec(line)) !== null) {
+          const start = m.index;
+          for (const [offsetStr, reading] of Object.entries(rule.pyAt)) {
+            const i = start + Number(offsetStr);
+            if (i < 0 || i >= chars.length || locked[i]) continue;
+            pys[i] = reading;
+            locked[i] = true;
+          }
+        }
+      }
+    }
+
+    function linePinyinBySegment(line, chars) {
+      const out = new Array(chars.length).fill("");
+      if (typeof pinyin !== "function") return out;
+      try {
+        const arr = pinyin(line, {
+          toneType: "symbol",
+          type: "array",
+          nonZh: "consecutive",
+        });
+        let ai = 0;
+        for (let i = 0; i < chars.length; i++) {
+          const ch = chars[i];
+          if (isPunct(ch) || !HAN_RE.test(ch)) continue;
+          while (ai < arr.length && (!arr[ai] || /[^a-zāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜüńňǹ]/i.test(String(arr[ai])))) {
+            if (String(arr[ai]).includes(ch)) break;
+            ai++;
+          }
+          if (ai < arr.length) {
+            const token = String(arr[ai]);
+            if (/^[a-zāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜüńňǹ]+$/i.test(token)) {
+              out[i] = token;
+              ai++;
+            } else {
+              out[i] = pinyin(ch, { toneType: "symbol", type: "array" })[0] || "";
+              ai++;
+            }
+          }
+        }
+      } catch (e) {
+        /* 分词失败时退回单字 */
+      }
+      return out;
+    }
+
+    function annotateLine(line) {
+      const chars = Array.from(line);
+      const pys = new Array(chars.length).fill("");
+      const locked = new Array(chars.length).fill(false);
+      applyPhraseMap(line, chars, pys, locked);
+      applyContextRules(line, chars, pys, locked);
+      const seg = linePinyinBySegment(line, chars);
+      for (let i = 0; i < chars.length; i++) {
+        if (locked[i]) continue;
+        const ch = chars[i];
+        if (isPunct(ch) || !HAN_RE.test(ch)) {
+          locked[i] = true;
+          continue;
+        }
+        if (seg[i]) {
+          pys[i] = seg[i];
+          locked[i] = true;
+        }
+      }
+      for (let i = 0; i < chars.length; i++) {
+        if (locked[i]) continue;
+        const ch = chars[i];
+        if (isPunct(ch) || !HAN_RE.test(ch)) continue;
+        if (typeof pinyin === "function") {
+          try {
+            pys[i] = pinyin(ch, { toneType: "symbol", type: "array" })[0] || "";
+          } catch (e) {
+            pys[i] = "";
+          }
+        }
+      }
+      return chars.map((ch, i) => ({ ch, py: pys[i] || "" }));
+    }
+
+    function cyclePinyin(ch, current) {
+      const alts = POLY_ALTS[ch];
+      if (!alts || !alts.length) return current;
+      const idx = alts.indexOf(current);
+      return alts[(idx + 1) % alts.length];
+    }
+
+    function closePyEditor() {
+      els.pyEditor.classList.remove("show");
+      pyEditTarget = null;
+    }
+
+    function openPyEditor(pyEl, anchorEl) {
+      pyEditTarget = pyEl;
+      const ch = pyEl.dataset.ch || "";
+      els.pyEditChar.textContent = ch;
+      els.pyEditInput.value = pyEl.textContent || "";
+      els.pyEditAlts.innerHTML = "";
+      (POLY_ALTS[ch] || []).forEach((a) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.textContent = a;
+        if (a === pyEl.textContent) b.classList.add("active");
+        b.addEventListener("click", () => {
+          els.pyEditInput.value = a;
+          els.pyEditAlts.querySelectorAll("button").forEach((x) => x.classList.remove("active"));
+          b.classList.add("active");
+          els.pyEditInput.focus();
+        });
+        els.pyEditAlts.appendChild(b);
+      });
+      const rect = anchorEl.getBoundingClientRect();
+      els.pyEditor.classList.add("show");
+      const left = Math.min(window.innerWidth - 280, Math.max(8, rect.left + rect.width / 2 - 130));
+      const top = Math.min(window.innerHeight - 220, rect.bottom + 8);
+      els.pyEditor.style.left = left + "px";
+      els.pyEditor.style.top = top + "px";
+      els.pyEditInput.focus();
+      els.pyEditInput.select();
+    }
+
+    function commitPyEditor() {
+      if (!pyEditTarget) return;
+      const val = normalizePinyinInput(els.pyEditInput.value);
+      const key = pyEditTarget.dataset.key;
+      pyEditTarget.textContent = val;
+      if (key) {
+        if (val) pyOverrides.set(key, val);
+        else pyOverrides.delete(key);
+      }
+      pyEditTarget.classList.toggle("manual", !!(key && pyOverrides.has(key)));
+      const page = pyEditTarget.closest(".page");
+      if (page) fitPinyin(page);
+      closePyEditor();
+      refreshMeta();
+    }
+
+    function createCharEl(item, showPinyin, key) {
+      const wrap = document.createElement("span");
+      let extra = "";
+      if (/[A-Za-z0-9]/.test(item.ch)) extra = " latin";
+      else if (isPunct(item.ch) || !HAN_RE.test(item.ch)) extra = " punct";
+      wrap.className = "char" + extra;
+      wrap.dataset.ch = item.ch;
+
+      if (showPinyin) {
+        const py = document.createElement("span");
+        py.className = "pinyin editable";
+        const overridden = key && pyOverrides.has(key);
+        py.textContent = overridden ? pyOverrides.get(key) : (item.py || "");
+        py.dataset.ch = item.ch;
+        if (key) py.dataset.key = key;
+        if (overridden) py.classList.add("manual");
+        const tips = [];
+        if (POLY_ALTS[item.ch]) tips.push("单击轮换：" + POLY_ALTS[item.ch].join(" / "));
+        tips.push("双击手动修改");
+        py.title = tips.join("；");
+
+        let clickTimer = null;
+        py.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (clickTimer) clearTimeout(clickTimer);
+          clickTimer = setTimeout(() => {
+            clickTimer = null;
+            if (!POLY_ALTS[item.ch]) {
+              openPyEditor(py, wrap);
+              return;
+            }
+            const next = cyclePinyin(item.ch, py.textContent);
+            py.textContent = next;
+            if (key) {
+              pyOverrides.set(key, next);
+              py.classList.add("manual");
+            }
+            const page = wrap.closest(".page");
+            if (page) fitPinyin(page);
+            refreshMeta();
+          }, 220);
+        });
+        py.addEventListener("dblclick", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (clickTimer) {
+            clearTimeout(clickTimer);
+            clickTimer = null;
+          }
+          openPyEditor(py, wrap);
+        });
+        wrap.appendChild(py);
+      }
+
+      const han = document.createElement("span");
+      han.className = "han";
+      han.textContent = item.ch;
+      wrap.appendChild(han);
+      return wrap;
+    }
+
+    function tokensOf(line) {
+      return annotateLine(line)
+        .map((item, index) => ({ item, index }))
+        .filter((t) => t.item.ch.trim() !== "");
+    }
+
+    function groupTokens(tokens) {
+      const groups = [];
+      let i = 0;
+      const chAt = (k) => tokens[k].item.ch;
+      while (i < tokens.length) {
+        const ch = chAt(i);
+        if (/[A-Za-z0-9]/.test(ch)) {
+          const g = [];
+          while (i < tokens.length && /[A-Za-z0-9]/.test(chAt(i))) g.push(tokens[i++]);
+          while (i < tokens.length && CLOSE_PUNCT.has(chAt(i))) g.push(tokens[i++]);
+          groups.push(g);
+          continue;
+        }
+        if (OPEN_PUNCT.has(ch)) {
+          const g = [tokens[i++]];
+          if (i < tokens.length && !OPEN_PUNCT.has(chAt(i))) {
+            if (/[A-Za-z0-9]/.test(chAt(i))) {
+              while (i < tokens.length && /[A-Za-z0-9]/.test(chAt(i))) g.push(tokens[i++]);
+            } else {
+              g.push(tokens[i++]);
+            }
+            while (i < tokens.length && CLOSE_PUNCT.has(chAt(i))) g.push(tokens[i++]);
+          }
+          groups.push(g);
+          continue;
+        }
+        const g = [tokens[i++]];
+        while (i < tokens.length && CLOSE_PUNCT.has(chAt(i))) g.push(tokens[i++]);
+        groups.push(g);
+      }
+      return groups;
+    }
+
+    function appendTokens(parent, tokens, essayIdx, section, lineIdx, showPinyin) {
+      groupTokens(tokens).forEach((group) => {
+        const glue = document.createElement("span");
+        glue.className = "glue";
+        group.forEach(({ item, index }) => {
+          glue.appendChild(createCharEl(item, showPinyin, pyKey(essayIdx, section, lineIdx, index)));
+        });
+        parent.appendChild(glue);
+      });
+    }
+
+    function fitPinyin(page) {
+      page.querySelectorAll(".char").forEach((charEl) => {
+        const pyEl = charEl.querySelector(".pinyin");
+        const hanEl = charEl.querySelector(".han");
+        if (!pyEl || !pyEl.textContent) return;
+        pyEl.style.transform = "scale(1)";
+        const maxW = Math.max(hanEl.offsetWidth, charEl.offsetWidth * 0.95, 1);
+        const w = pyEl.scrollWidth;
+        if (w > maxW) pyEl.style.transform = "scale(" + Math.max(0.55, maxW / w) + ")";
+      });
+    }
+
+    function modeClass(mode) {
+      if (mode === "han") return "mode-han-only";
+      if (mode === "grid") return "mode-grid";
+      if (mode === "kids") return "mode-kids mode-grid";
+      return "";
+    }
+
+    function buildEssayEl(essay, essayIdx, mode, showPinyin, indent) {
+      const root = document.createElement("article");
+      root.className = "essay " + modeClass(mode);
+
+      const head = document.createElement("header");
+      head.className = "essay-head";
+
+      const title = document.createElement("h2");
+      title.className = "essay-title";
+      if (showPinyin) appendTokens(title, tokensOf(essay.title), essayIdx, "title", 0, true);
+      else title.textContent = essay.title;
+      head.appendChild(title);
+
+      if (essay.author) {
+        const author = document.createElement("div");
+        author.className = "essay-author";
+        author.textContent = essay.author;
+        head.appendChild(author);
+      }
+      root.appendChild(head);
+
+      const body = document.createElement("div");
+      body.className = "essay-body";
+      essay.paragraphs.forEach((para, pi) => {
+        const p = document.createElement("p");
+        p.className = "para";
+        if (indent) {
+          const spacer = document.createElement("span");
+          spacer.className = "indent-spacer";
+          spacer.setAttribute("aria-hidden", "true");
+          p.appendChild(spacer);
+        }
+        appendTokens(p, tokensOf(para), essayIdx, "p", pi, showPinyin);
+        body.appendChild(p);
+      });
+      root.appendChild(body);
+      return root;
+    }
+
+    function contentBox(page) {
+      return page.querySelector(".page-content");
+    }
+
+    function contentTooTall(page) {
+      const inner = page.querySelector(".page-inner");
+      const content = contentBox(page);
+      if (!inner || !content) return false;
+      return content.offsetHeight > inner.clientHeight + 2 || content.scrollWidth > inner.clientWidth + 2;
+    }
+
+    function placeContent(page) {
+      const inner = page.querySelector(".page-inner");
+      const over = contentTooTall(page);
+      page.classList.toggle("overflow", over);
+      if (inner) inner.classList.toggle("center", !over);
+      return over;
+    }
+
+    function clearPageFit(page) {
+      page.style.removeProperty("--han-size");
+      page.style.removeProperty("--py-size");
+      page.style.removeProperty("--title-size");
+      page.style.removeProperty("--essay-gap");
+    }
+
+    function refreshMeta() {
+      const n = els.pages.querySelectorAll(".page.overflow").length;
+      const ov = pyOverrides.size ? " · 已改注音 " + pyOverrides.size + " 处" : "";
+      const py = typeof pinyin === "function" ? "" : " · 注音未加载";
+      els.meta.textContent = metaBase + ov + py + (n ? " · " + n + " 页超出" : "");
+    }
+
+    function markPages() {
+      els.pages.querySelectorAll(".page").forEach(placeContent);
+      refreshMeta();
+    }
+
+    function autoFitPages() {
+      els.pages.querySelectorAll(".page").forEach((page) => {
+        const rootCs = getComputedStyle(document.documentElement);
+        ["--han-size", "--py-size", "--title-size", "--essay-gap"].forEach((name) => {
+          page.style.setProperty(name, rootCs.getPropertyValue(name).trim());
+        });
+        let guard = 0;
+        while (guard++ < 32) {
+          fitPinyin(page);
+          if (!contentTooTall(page)) break;
+          const cs = getComputedStyle(page);
+          const han = parseFloat(cs.getPropertyValue("--han-size")) || 26;
+          const py = parseFloat(cs.getPropertyValue("--py-size")) || 12;
+          const title = parseFloat(cs.getPropertyValue("--title-size")) || 34;
+          const gap = parseFloat(cs.getPropertyValue("--essay-gap")) || 8;
+          if (han <= 15 && gap <= 4) break;
+          page.style.setProperty("--han-size", Math.max(15, han * 0.94) + "px");
+          page.style.setProperty("--py-size", Math.max(8, py * 0.94) + "px");
+          page.style.setProperty("--title-size", Math.max(18, title * 0.94) + "px");
+          if (gap > 4) page.style.setProperty("--essay-gap", Math.max(4, +(gap * 0.94).toFixed(2)) + "mm");
+        }
+        fitPinyin(page);
+        placeContent(page);
+      });
+      refreshMeta();
+    }
+
+    function maybeAutoFit() {
+      if (!els.pages.querySelector(".essay")) return;
+      if (els.fit.value === "auto") {
+        requestAnimationFrame(autoFitPages);
+      } else {
+        els.pages.querySelectorAll(".page").forEach(clearPageFit);
+        applyStyles();
+        requestAnimationFrame(() => {
+          els.pages.querySelectorAll(".page").forEach(fitPinyin);
+          markPages();
+        });
+      }
+    }
+
+    function render() {
+      closePyEditor();
+      applyStyles();
+      const essays = parseEssays(els.input.value);
+      const orient = els.orient.value;
+      const mode = els.mode.value;
+      const showPinyin = mode !== "han";
+      const perPage = Math.max(1, Math.min(4, Number(els.essaysPerPage.value) || 1));
+      const layout = els.multiLayout.value;
+      const indent = els.indent.checked;
+
+      els.pages.innerHTML = "";
+      if (!essays.length) {
+        els.pages.innerHTML = '<div class="empty">请输入至少一篇短文</div>';
+        metaBase = "尚未生成";
+        refreshMeta();
+        return;
+      }
+
+      const pageCount = Math.ceil(essays.length / perPage);
+      for (let p = 0; p < pageCount; p++) {
+        const page = document.createElement("section");
+        page.className = "page" + (orient === "landscape" ? " landscape" : "");
+        page.setAttribute("aria-label", "第 " + (p + 1) + " 页");
+
+        const inner = document.createElement("div");
+        inner.className = "page-inner";
+        const content = document.createElement("div");
+        content.className = "page-content";
+        if (perPage > 1 && layout === "grid2") content.classList.add("layout-grid-2");
+
+        essays.slice(p * perPage, p * perPage + perPage).forEach((essay, j) => {
+          content.appendChild(buildEssayEl(essay, p * perPage + j, mode, showPinyin, indent));
+        });
+        inner.appendChild(content);
+        page.appendChild(inner);
+        els.pages.appendChild(page);
+      }
+
+      const chars = essays.reduce((sum, essay) => {
+        return sum + Array.from(essay.title).length + essay.paragraphs.reduce((n, para) => n + Array.from(para).length, 0);
+      }, 0);
+      metaBase = "共 " + essays.length + " 篇 · " + chars + " 字 · " + pageCount + " 页 · 每页 " + perPage + " 篇 · " +
+        (orient === "landscape" ? "横向" : "纵向") + " · " + els.mode.options[els.mode.selectedIndex].text;
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          els.pages.querySelectorAll(".page").forEach(fitPinyin);
+          if (els.fit.value === "auto") autoFitPages();
+          else markPages();
+        });
+      });
+    }
+
+    els.btnRender.addEventListener("click", render);
+    els.btnSample.addEventListener("click", () => {
+      els.input.value = SAMPLE;
+      render();
+    });
+    els.btnClearPy.addEventListener("click", () => {
+      pyOverrides.clear();
+      closePyEditor();
+      render();
+    });
+    els.btnPrint.addEventListener("click", () => { closePyEditor(); window.print(); });
+    els.btnPrint2.addEventListener("click", () => { closePyEditor(); window.print(); });
+    els.mode.addEventListener("change", render);
+    els.orient.addEventListener("change", render);
+    els.essaysPerPage.addEventListener("change", render);
+    els.multiLayout.addEventListener("change", render);
+    els.indent.addEventListener("change", render);
+    els.fit.addEventListener("change", () => {
+      applyStyles();
+      maybeAutoFit();
+    });
+
+    els.pyEditOk.addEventListener("click", commitPyEditor);
+    els.pyEditCancel.addEventListener("click", closePyEditor);
+    els.pyEditInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); commitPyEditor(); }
+      if (e.key === "Escape") { e.preventDefault(); closePyEditor(); }
+    });
+    document.addEventListener("click", (e) => {
+      if (!els.pyEditor.classList.contains("show")) return;
+      if (els.pyEditor.contains(e.target)) return;
+      if (e.target && e.target.classList && e.target.classList.contains("pinyin")) return;
+      closePyEditor();
+    });
+
+    els.input.value = SAMPLE;
+    render();
+  </script>
+</body>
+</html>

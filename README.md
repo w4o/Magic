@@ -1,6 +1,6 @@
 # Magic
 
-小学生口算、古诗注音、识字卡片、当天日程。在浏览器里排好版，再打印成 A4。不需要安装、登录或后端。
+小学生口算、古诗注音、短文注音、识字卡片、当天日程。在浏览器里排好版，再打印成 A4。不需要安装、登录或后端。
 
 **在线使用：** [https://w4o.github.io/Magic/](https://w4o.github.io/Magic/)
 
@@ -11,10 +11,11 @@
 | 首页 | [`index.html`](index.html) | 进入各个工具 |
 | 小学生计算题 | [`suan-ti.html`](suan-ti.html) | 按年级生成加减乘除口算卷，可计时、对答案 |
 | 古诗拼音排版 | [`gushi-pinyin.html`](gushi-pinyin.html) | 给古诗自动注音，排成可打印的 A4 |
+| 短文排版 | [`duanwen.html`](duanwen.html) | 给短文自动注音，按段落排成可打印的 A4 |
 | 中文字卡片 | [`word-card.html`](word-card.html) | 把汉字排成大方块卡片，裁开使用 |
 | 今日日程 | [`richeng.html`](richeng.html) | 排一天的时间表，预览并打印成 A4 |
 
-计算题和字卡片可以离线打开。古诗注音会从 jsDelivr 加载 [pinyin-pro](https://github.com/zh-lx/pinyin-pro) `3.26.0`，这一页需要能访问该 CDN；脚本加载失败时只排汉字。
+计算题、字卡片和日程可以离线打开。古诗注音和短文注音会从 jsDelivr 加载 [pinyin-pro](https://github.com/zh-lx/pinyin-pro) `3.26.0`，这两页需要能访问该 CDN；脚本加载失败时只排汉字。
 
 ## 本地使用
 
@@ -107,6 +108,35 @@ suan-ti.html?preset=mul9&count=36&layout=horizontal&answers=1
 
 单击拼音可在多音之间轮换，双击可手动改读音。这些修改会保留到下一次重新生成；「清除注音修改」会去掉它们。
 
+## 短文排版
+
+打开 [`duanwen.html`](duanwen.html)。页面会先填入两篇示例，点「生成排版」即可看到效果。
+
+输入格式：
+
+```text
+小鸭子学游泳
+
+鸭妈妈带着小鸭子来到河边。
+小鸭子还有一点害怕，后来慢慢地学会了。
+
+雨后的校园
+作者 · 佚名
+
+雨停了，花和草都洗得干干净净。
+```
+
+- 第一行是标题。
+- 下一行如果以「作者」「选自」「出处」开头，或带间隔号 `·`，会当成署名。
+- 其余每一行是一段。同一篇里段和段之间用换行，不要再空一行。
+- 多篇短文之间空一行。标题和正文之间可以空一行。
+
+排版可以选：拼音 + 汉字、纯汉字、田字格、超大字号。还可以改纸张方向、每页篇数、纵向或双栏、字号、行距、字距、页边距和首行缩进。「自动适应」会把内容缩进当前页面。
+
+正文按段落换行，标点尽量不放在行首。单击拼音可在多音之间轮换，双击可手动改读音。这些修改会保留到下一次重新生成；「清除注音修改」会去掉它们。
+
+打印：A4，边距选「无」，并关掉页眉页脚。方向与页面上的选择一致。
+
 ## 中文字卡片
 
 打开 [`word-card.html`](word-card.html)，输入文字后点「生成卡片」。
@@ -134,6 +164,7 @@ suan-ti.html?preset=mul9&count=36&layout=horizontal&answers=1
 index.html          首页
 suan-ti.html        口算卷
 gushi-pinyin.html   古诗注音排版
+duanwen.html        短文注音排版
 word-card.html      汉字卡片
 richeng.html        今日日程
 .github/workflows/static.yml
