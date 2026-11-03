@@ -612,7 +612,7 @@
     <aside class="panel no-print">
       <a class="home" href="index.html">全部工具</a>
       <h1>短文排版</h1>
-      <p class="sub">输入短文，自动注音并按段落排版，支持 A4 打印。可调每页篇数、缩进和单个注音。</p>
+      <p class="sub">输入短文，自动注音并按段落排版，支持 A4 打印。可调每页篇数、退格和单个注音。</p>
 
       <label for="input">短文输入（多篇用空行分隔）</label>
       <textarea id="input" placeholder="小鸭子学游泳
@@ -669,7 +669,11 @@
         </div>
       </div>
 
-      <label class="checkline"><input type="checkbox" id="indent" checked /> 段落首行缩进两字</label>
+      <label for="indent">退格</label>
+      <select id="indent">
+        <option value="1" selected>段首退两格</option>
+        <option value="0">不退格</option>
+      </select>
 
       <label>篇间距 <span class="ctrl"><input id="essayGap" type="range" min="4" max="24" value="8" /><output id="essayGapOut">8mm</output></span></label>
       <label>汉字大小 <span class="ctrl"><input id="hanSize" type="range" min="16" max="72" value="26" /><output id="hanSizeOut">26px</output></span></label>
@@ -1555,7 +1559,7 @@
       const showPinyin = mode !== "han";
       const perPage = Math.max(1, Math.min(4, Number(els.essaysPerPage.value) || 1));
       const layout = els.multiLayout.value;
-      const indent = els.indent.checked;
+      const indent = els.indent.value !== "0";
 
       els.pages.innerHTML = "";
       if (!essays.length) {
