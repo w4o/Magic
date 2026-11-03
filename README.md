@@ -8,30 +8,30 @@
 
 | 页面 | 文件 | 做什么 |
 | --- | --- | --- |
-| 首页 | [`index.html`](index.html) | 进入各个工具 |
-| 小学生计算题 | [`suan-ti.html`](suan-ti.html) | 按年级生成加减乘除口算卷，可计时、对答案 |
-| 古诗拼音排版 | [`gushi-pinyin.html`](gushi-pinyin.html) | 给古诗自动注音，排成可打印的 A4 |
-| 短文排版 | [`duanwen.html`](duanwen.html) | 给短文自动注音，按段落排成可打印的 A4 |
-| 中文字卡片 | [`word-card.html`](word-card.html) | 把汉字排成大方块卡片，裁开使用 |
-| 今日日程 | [`richeng.html`](richeng.html) | 排一天的时间表，预览并打印成 A4 |
+| 首页 | [`src/index.html`](src/index.html) | 进入各个工具 |
+| 小学生计算题 | [`src/suan-ti.html`](src/suan-ti.html) | 按年级生成加减乘除口算卷，可计时、对答案 |
+| 古诗拼音排版 | [`src/gushi-pinyin.html`](src/gushi-pinyin.html) | 给古诗自动注音，排成可打印的 A4 |
+| 短文排版 | [`src/duanwen.html`](src/duanwen.html) | 给短文自动注音，按段落排成可打印的 A4 |
+| 中文字卡片 | [`src/word-card.html`](src/word-card.html) | 把汉字排成大方块卡片，裁开使用 |
+| 今日日程 | [`src/richeng.html`](src/richeng.html) | 排一天的时间表，预览并打印成 A4 |
 
 计算题、字卡片和日程可以离线打开。古诗注音和短文注音会从 jsDelivr 加载 [pinyin-pro](https://github.com/zh-lx/pinyin-pro) `3.26.0`，这两页需要能访问该 CDN；脚本加载失败时只排汉字。
 
 ## 本地使用
 
-克隆仓库后，用浏览器打开 `index.html` 即可。
+克隆仓库后，用浏览器打开 `src/index.html` 即可。
 
 ```bash
 git clone git@github.com:w4o/Magic.git
 cd Magic
-open index.html
+open src/index.html
 ```
 
-每个工具都是单个 HTML 文件，没有构建步骤。
+每个工具都是 `src/` 里的单个 HTML 文件，本地打开不用先构建。
 
 ## 小学生计算题
 
-打开 [`suan-ti.html`](suan-ti.html)。左侧选题型和范围，右侧是 A4 预览。
+打开 [`src/suan-ti.html`](src/suan-ti.html)。左侧选题型和范围，右侧是 A4 预览。
 
 - 题型覆盖一到四年级，从 10 以内加减到万以内加减、表内乘除和两位数乘两位数。
 - 可改运算、进退位、填空位置（得数或未知数）、横式或竖式、每行题数和题目数量（1–200）。
@@ -80,7 +80,7 @@ suan-ti.html?preset=mul9&count=36&layout=horizontal&answers=1
 
 ## 古诗拼音排版
 
-打开 [`gushi-pinyin.html`](gushi-pinyin.html)。页面会先填入几首示例，点「生成排版」即可看到效果。
+打开 [`src/gushi-pinyin.html`](src/gushi-pinyin.html)。页面会先填入几首示例，点「生成排版」即可看到效果。
 
 输入格式：
 
@@ -110,7 +110,7 @@ suan-ti.html?preset=mul9&count=36&layout=horizontal&answers=1
 
 ## 短文排版
 
-打开 [`duanwen.html`](duanwen.html)。页面会先填入两篇示例，点「生成排版」即可看到效果。
+打开 [`src/duanwen.html`](src/duanwen.html)。页面会先填入两篇示例，点「生成排版」即可看到效果。
 
 输入格式：
 
@@ -139,13 +139,13 @@ suan-ti.html?preset=mul9&count=36&layout=horizontal&answers=1
 
 ## 中文字卡片
 
-打开 [`word-card.html`](word-card.html)，输入文字后点「生成卡片」。
+打开 [`src/word-card.html`](src/word-card.html)，输入文字后点「生成卡片」。
 
 空格会被去掉。每个字一张 7 cm × 7 cm 的卡片，楷体大字，A4 上每页 12 张（3 列 × 4 行），沿虚线裁开。
 
 ## 今日日程
 
-打开 [`richeng.html`](richeng.html)。左侧填写姓名、班级、日期和一天的安排，右侧是 A4 预览。
+打开 [`src/richeng.html`](src/richeng.html)。左侧填写姓名、班级、日期和一天的安排，右侧是 A4 预览。
 
 - 每一项有开始时间、结束时间、类型和要做的事。可以添加、删除、上下移动，或按时间排序。
 - 「填入上学日」「填入周末」会放进一份示例，可以再改。姓名、日期和今日目标会保留。
@@ -161,20 +161,25 @@ suan-ti.html?preset=mul9&count=36&layout=horizontal&answers=1
 ## 项目结构
 
 ```text
-index.html          首页
-suan-ti.html        口算卷
-gushi-pinyin.html   古诗注音排版
-duanwen.html        短文注音排版
-word-card.html      汉字卡片
-richeng.html        今日日程
+src/                    页面源文件
+  index.html            首页
+  suan-ti.html          口算卷
+  gushi-pinyin.html     古诗注音排版
+  duanwen.html          短文注音排版
+  word-card.html        汉字卡片
+  richeng.html          今日日程
+scripts/minify-pages.mjs
+dist/                   压缩后的发布结果（构建生成）
 .github/workflows/static.yml
 ```
 
 ## 部署
 
-推送到 `main` 后，[GitHub Actions](.github/workflows/static.yml) 会把仓库根目录发布到 GitHub Pages：
+推送到 `main` 后，[GitHub Actions](.github/workflows/static.yml) 会先压缩 `src/` 里的 HTML（空白、注释、内联样式和脚本），再把 `dist/` 发布到 GitHub Pages：
 
 [https://w4o.github.io/Magic/](https://w4o.github.io/Magic/)
+
+仓库里的页面保持原样，方便直接阅读和本地打开。压缩只发生在发布这一步。
 
 也可以在 Actions 里手动运行 “Deploy static content to Pages”。
 

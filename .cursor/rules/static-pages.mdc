@@ -1,0 +1,18 @@
+---
+description: 静态页放在 src，发布前压缩到 dist
+alwaysApply: true
+---
+
+# 静态页目录与发布
+
+页面源文件只放在 `src/`。发布只上传压缩后的 `dist/`。
+
+- 每个工具一个 HTML，页面之间用相对路径。新页面加到 `src/index.html`。
+- 不要把 HTML 放回仓库根目录，不要手改或提交 `dist/`。
+- 改完 `src/` 后在仓库根目录运行 `npm run build`。`scripts/minify-pages.mjs` 读取 `src/*.html`，写入 `dist/`。
+- 源文件保持可读。压缩只发生在构建和 GitHub Actions 发布时。
+
+```text
+src/duanwen.html    可编辑
+dist/duanwen.html   构建产物，不要提交
+```
